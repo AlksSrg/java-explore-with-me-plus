@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
                 classes = {StatsClientImp.class})
 class StatsClientImpTest {
-    private final StatsClient statsClientImp;
+    private final StatsClient statsClient;
 
     @Test
     public void testMethodSaveStat() {
@@ -22,12 +22,12 @@ class StatsClientImpTest {
         endpointHit.setApi("127.0.0.1");
         endpointHit.setTimestamp(LocalDateTime.now());
 
-        statsClientImp.saveStat(endpointHit);
+        statsClient.saveStat(endpointHit);
     }
 
     @Test
     public void testMethodGetStats() {
-
+        statsClient.getStats(LocalDateTime.now(), LocalDateTime.now().plusDays(5), true);
     }
 
 }
