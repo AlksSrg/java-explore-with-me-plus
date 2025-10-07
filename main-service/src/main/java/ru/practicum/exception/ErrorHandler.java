@@ -25,11 +25,34 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNotFoundResource(NotFoundResource ex) {
+        log.error(ex.getMessage());
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Запрашиваемый объект не найден")
+                .status(HttpStatus.NOT_FOUND.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictResource(ConflictResource ex) {
+        log.error(ex.getMessage());
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Нарушено ограничение целостности")
+                .status(HttpStatus.NOT_FOUND.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(Exception ex) {
         log.error(ex.getMessage());
         return ApiError.builder()
-                //.errors(List.of(convertStackTraceToString(ex)))
                 .message(ex.getMessage())
                 .reason(ex.getMessage())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.toString())
