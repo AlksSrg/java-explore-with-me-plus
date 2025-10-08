@@ -49,7 +49,7 @@ public class StatsClient {
                 .build();
 
         try {
-            ResponseEntity<Void> response =  restClient.post()
+            ResponseEntity<Void> response = restClient.post()
                     .uri("/hint")
                     .contentType(APPLICATION_JSON)
                     .body(endpointHit)
