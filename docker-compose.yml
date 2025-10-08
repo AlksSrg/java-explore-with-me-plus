@@ -25,7 +25,7 @@ services:
       - "8080:8080"
     depends_on:
       - ewm-db
-      - stats-server
+#      - stats-server
 
   ewm-db:
     image: postgres:16.1
