@@ -1,44 +1,41 @@
 package ru.practicum.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import dto.EndpointHitDto;
 import dto.ViewStatsDto;
 import dto.ViewStatsRequestDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.practicum.repository.EndpointHitRepository;
+
+import java.util.List;
 
 @Slf4j
 @Service
 public class EndpointHitServiceImpl implements EndpointHitService {
-	private final EndpointHitRepository endpointHitRepository;
+    private final EndpointHitRepository endpointHitRepository;
 
-	public EndpointHitServiceImpl(EndpointHitRepository endpointHitRepository) {
-		this.endpointHitRepository = endpointHitRepository;
-	}
+    public EndpointHitServiceImpl(EndpointHitRepository endpointHitRepository) {
+        this.endpointHitRepository = endpointHitRepository;
+    }
 
-	/*
-	 * Сохранение информации о том, что на uri конкретного сервиса был отправлен
-	 * запрос пользователем. Название сервиса, uri и ip пользователя указаны в теле
-	 * запроса.
-	 */
-	@Override
-	public void addEndpointHit(EndpointHitDto endpointHit) {
-		log.info("Получен объект для сохранения: {}", endpointHit);
-		endpointHitRepository.addEndpointHit(endpointHit);
-		log.info("Объект {} сохранен", endpointHit);
-	}
+    /**
+     * Сохраняет информацию о запросе к эндпоинту.
+     *
+     * @param endpointHit данные о запросе
+     */
+    @Override
+    public void addEndpointHit(EndpointHitDto endpointHit) {
+        endpointHitRepository.addEndpointHit(endpointHit);
+    }
 
-	/*
-	 * Метод получения данных статистики по посещениям uri-адресов
-	 */
-	@Override
-	public List<ViewStatsDto> getViewStats(ViewStatsRequestDto viewStatsRequestDto) {
-		log.info("Получен объект для вызова статистики: {}", viewStatsRequestDto);
-		List<ViewStatsDto> viewStatsResponse = endpointHitRepository.getViewStats(viewStatsRequestDto);
-		log.info("Получен список объектов статистики: {}", viewStatsRequestDto);
-		return viewStatsResponse;
-	}
+    /**
+     * Получает статистику просмотров по заданным параметрам.
+     *
+     * @param viewStatsRequestDto параметры запроса статистики
+     * @return список статистики просмотров
+     */
+    @Override
+    public List<ViewStatsDto> getViewStats(ViewStatsRequestDto viewStatsRequestDto) {
+        return endpointHitRepository.getViewStats(viewStatsRequestDto);
+    }
 }

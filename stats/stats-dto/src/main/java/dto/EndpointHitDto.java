@@ -3,7 +3,10 @@ package dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import constant.DateTimeConstants;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -32,7 +35,6 @@ public class EndpointHitDto {
     String ip;
 
     @NotNull(message = "Поле timestamp не может быть пустым")
-    @PastOrPresent(message = "Поле timestamp должно быть не позже текущей даты и времени")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimeConstants.DATE_TIME_FORMAT_PATTERN)
     LocalDateTime timestamp;
 }

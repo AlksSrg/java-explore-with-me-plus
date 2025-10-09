@@ -30,8 +30,13 @@ public class StatsClient {
                 .build();
     }
 
-    /* так как сервер статистики у нас второстепенен то результат работы
-       только информационный, без исключений
+    /**
+     * Сохраняет информацию о запросе к эндпоинту.
+     *
+     * @param app название сервиса
+     * @param uri URI эндпоинта
+     * @param ip  IP адрес пользователя
+     * @return true если информация успешно сохранена, false в противном случае
      */
     public boolean saveStat(String app, String uri, String ip) {
         if (app == null || app.isBlank()
@@ -58,17 +63,34 @@ public class StatsClient {
             return response.getStatusCode() == HttpStatus.CREATED;
         } catch (ResourceAccessException ex) {
             log.error("Сервер не доступен");
-            return false;  // лишнее, но, что то нужно сделать
+            return false;
         } catch (RestClientException ex) {
             log.error(ex.getMessage());
             return false;
         }
     }
 
+    /**
+     * Получает статистику просмотров за указанный период.
+     *
+     * @param start  начало периода
+     * @param end    конец периода
+     * @param unique учитывать только уникальные посещения
+     * @return список статистики просмотров
+     */
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {
         return getStats(start, end, null, unique);
     }
 
+    /**
+     * Получает статистику просмотров за указанный период для конкретных URI.
+     *
+     * @param start  начало периода
+     * @param end    конец периода
+     * @param uris   список URI для фильтрации
+     * @param unique учитывать только уникальные посещения
+     * @return список статистики просмотров
+     */
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         if (start == null || end == null || end.isBefore(start)) {
             log.error("Дата окнчания раньше даты начала");

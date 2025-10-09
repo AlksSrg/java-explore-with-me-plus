@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ResponseError {
-	private String errorMessage;
-	private String reason;
-	private String timestamp;
+    private String errorMessage;
+    private String reason;
+    private String timestamp;
 }
