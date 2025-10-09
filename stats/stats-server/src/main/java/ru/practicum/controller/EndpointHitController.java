@@ -21,7 +21,6 @@ import ru.practicum.service.EndpointHitService;
 @Validated
 @RestController
 public class EndpointHitController {
-	
 	private final EndpointHitService endpointHitService;
 
 	public EndpointHitController(EndpointHitService endpointHitService) {

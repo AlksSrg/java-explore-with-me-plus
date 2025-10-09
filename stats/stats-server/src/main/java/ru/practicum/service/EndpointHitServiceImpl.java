@@ -13,7 +13,6 @@ import ru.practicum.repository.EndpointHitRepository;
 @Slf4j
 @Service
 public class EndpointHitServiceImpl implements EndpointHitService {
-
 	private final EndpointHitRepository endpointHitRepository;
 
 	public EndpointHitServiceImpl(EndpointHitRepository endpointHitRepository) {
