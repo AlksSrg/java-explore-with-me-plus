@@ -8,22 +8,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class EndpointHitHandler {
-	
-	private final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
-	@ExceptionHandler
-	public ResponseError unableAddElementExceptionHandler (final UnableAddElementException exception) {
+    @ExceptionHandler
+    public ResponseError unableAddElementExceptionHandler(final UnableAddElementException exception) {
+        return ResponseError.builder()
+                .errorMessage(exception.getMessage())
+                .reason(exception.getReason())
+                .timestamp(getTimeStamp())
+                .build();
+    }
 
-		return ResponseError.builder()
-				.errorMessage(exception.getMessage())
-				.reason(exception.getReason())
-				.timestamp(getTimeStamp())
-				.build();
-		
-	}
-
-	private String getTimeStamp() {
-		return LocalDateTime.now().format(dateTimeFormatter);
-	}
+    private String getTimeStamp() {
+        return LocalDateTime.now().format(dateTimeFormatter);
+    }
 }
