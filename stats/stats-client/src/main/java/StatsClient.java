@@ -33,24 +33,24 @@ public class StatsClient {
     /* так как сервер статистики у нас второстепенен то результат работы
        только информационный, без исключений
      */
-    public boolean saveStat(String app, String uri, String api) {
+    public boolean saveStat(String app, String uri, String ip) {
         if (app == null || app.isBlank()
                 || uri == null || uri.isBlank()
-                || api == null || api.isBlank()) {
-            log.error("Некорректные входные параметры: app - {}, uri - {}, api - {}", app, uri, api);
+                || ip == null || ip.isBlank()) {
+            log.error("Некорректные входные параметры: app - {}, uri - {}, api - {}", app, uri, ip);
             return false;
         }
 
         EndpointHitDto endpointHit = EndpointHitDto.builder()
                 .app(app)
                 .uri(uri)
-                .ip(uri)
+                .ip(ip)
                 .timestamp(LocalDateTime.now())
                 .build();
 
         try {
             ResponseEntity<Void> response = restClient.post()
-                    .uri("/hint")
+                    .uri("/hit")
                     .contentType(APPLICATION_JSON)
                     .body(endpointHit)
                     .retrieve()
