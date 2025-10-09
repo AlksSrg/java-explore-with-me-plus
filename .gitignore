@@ -23,3 +23,6 @@ target/
 main-service/db
 stats/stats-server/db
 volumes/
+**/.classpath
+**/.project
+**/.settings
