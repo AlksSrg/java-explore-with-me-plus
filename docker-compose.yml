@@ -1,14 +1,20 @@
 services:
   stats-server:
     build: ./stats/stats-server
+    image: stats-server-image
+    container_name: stats-server-container
     ports:
       - "9090:9090"
     depends_on:
       - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:9032/stats
 
   stats-db:
     image: postgres:16.1
     container_name: postgres_stats_db
+    ports:
+      - "9032:5432"
     environment:
       - POSTGRES_PASSWORD=stats
       - POSTGRES_USER=stats
@@ -25,7 +31,11 @@ services:
       - "8080:8080"
     depends_on:
       - ewm-db
+<<<<<<< Updated upstream
 #      - stats-server
+=======
+  #      - stats-server
+>>>>>>> Stashed changes
 
   ewm-db:
     image: postgres:16.1
