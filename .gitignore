@@ -20,3 +20,12 @@ target/
 *.iws
 *.iml
 *.ipr
+main-service/db
+stats/stats-server/db
+volumes/
+.project
+.settings
+.settings/
+**/.project
+**/.settings
+**/.settings/

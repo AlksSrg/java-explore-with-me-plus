@@ -1,0 +1,41 @@
+package ru.practicum.service;
+
+import dto.EndpointHitDto;
+import dto.ViewStatsDto;
+import dto.ViewStatsRequestDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.practicum.repository.EndpointHitRepository;
+
+import java.util.List;
+
+@Slf4j
+@Service
+public class EndpointHitServiceImpl implements EndpointHitService {
+    private final EndpointHitRepository endpointHitRepository;
+
+    public EndpointHitServiceImpl(EndpointHitRepository endpointHitRepository) {
+        this.endpointHitRepository = endpointHitRepository;
+    }
+
+    /**
+     * Сохраняет информацию о запросе к эндпоинту.
+     *
+     * @param endpointHit данные о запросе
+     */
+    @Override
+    public void addEndpointHit(EndpointHitDto endpointHit) {
+        endpointHitRepository.addEndpointHit(endpointHit);
+    }
+
+    /**
+     * Получает статистику просмотров по заданным параметрам.
+     *
+     * @param viewStatsRequestDto параметры запроса статистики
+     * @return список статистики просмотров
+     */
+    @Override
+    public List<ViewStatsDto> getViewStats(ViewStatsRequestDto viewStatsRequestDto) {
+        return endpointHitRepository.getViewStats(viewStatsRequestDto);
+    }
+}
