@@ -13,6 +13,7 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.utill.UserGetParam;
 
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -21,6 +22,12 @@ import java.util.List;
 public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
 
+    /**
+     * Получает перечь пользователей.
+     *
+     * @param userGetParam параметры запроса
+     * @return список пользователей
+     */
     @Override
     public List<UserDto> getUsers(UserGetParam userGetParam) {
         List<User> users;
@@ -31,12 +38,19 @@ public class UserServiceImp implements UserService {
             users = userRepository.findAll();
 
         return users == null ? List.of() : users.stream()
-                .skip(userGetParam.getFrom() - 1)
-                .limit(userGetParam.getSize() != null ? userGetParam.getSize() : Integer.MAX_VALUE)
+                .sorted(Comparator.comparing(User::getId))
+                .skip(userGetParam.getFrom() == 0 ? 0 : userGetParam.getFrom() - 1)
+                .limit(userGetParam.getSize())
                 .map(UserMapper::mapToDto)
                 .toList();
     }
 
+    /**
+     * Создание нового пользователя.
+     *
+     * @param newUserRequest данные нового пользователя
+     * @return созданный пользователь
+     */
     @Override
     public UserDto createUser(NewUserRequest newUserRequest) {
         if (userRepository.findByEmailContainingIgnoreCase(newUserRequest.getEmail()).isPresent())
@@ -45,6 +59,11 @@ public class UserServiceImp implements UserService {
         return UserMapper.mapToDto(userRepository.save(UserMapper.mapToUser(newUserRequest)));
     }
 
+    /**
+     * Удаление пользователя.
+     *
+     * @param userId id пользователя
+     */
     @Override
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(Long userId) {

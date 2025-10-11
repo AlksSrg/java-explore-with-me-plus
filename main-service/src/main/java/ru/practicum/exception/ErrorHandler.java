@@ -1,7 +1,9 @@
 package ru.practicum.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,7 +29,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFoundResource(NotFoundResource ex) {
-        log.error(ex.getMessage());
+        log.error(convertStackTraceToString(ex));
         return ApiError.builder()
                 .message(ex.getMessage())
                 .reason("Запрашиваемый объект не найден")
@@ -39,7 +41,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflictResource(ConflictResource ex) {
-        log.error(ex.getMessage());
+        log.error(convertStackTraceToString(ex));
         return ApiError.builder()
                 .message(ex.getMessage())
                 .reason("Нарушено ограничение целостности")
@@ -48,10 +50,34 @@ public class ErrorHandler {
                 .build();
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ApiError handleArgumentNotValidException(MethodArgumentNotValidException ex) {
+        log.error(convertStackTraceToString(ex));
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Некорректные параметры")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ApiError handleConstraintViolationException(ConstraintViolationException ex) {
+        log.error(convertStackTraceToString(ex));
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Некорректные параметры")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(Exception ex) {
-        log.error(ex.getMessage());
+        log.error(convertStackTraceToString(ex));
         return ApiError.builder()
                 .message(ex.getMessage())
                 .reason(ex.getMessage())
