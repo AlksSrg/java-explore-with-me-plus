@@ -1,8 +1,10 @@
 package ru.practicum.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.user.dto.NewUserRequest;
@@ -19,10 +21,19 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
+    /**
+     * Получает перечь пользователей.
+     *
+     * @param ids  перечень id пользователей
+     * @param from количество элементов, которые нужно пропустить для формирования текущего набора
+     * @param size количество элементов в наборе
+     * @return список пользователей
+     */
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                  @RequestParam(defaultValue = "1") @Positive Integer from,
-                                  @RequestParam(required = false) Integer size) {
+                                  @RequestParam(defaultValue = "0")
+                                  @Min(value = 0, message = "Значение не может быть меньше нуля") int from,
+                                  @RequestParam(defaultValue = "10") @Positive int size) {
 
         return userService.getUsers(UserGetParam.builder()
                 .ids(ids)
@@ -31,12 +42,24 @@ public class UserController {
                 .build());
     }
 
+    /**
+     * Создание нового пользователя.
+     *
+     * @param newUserRequest данные нового пользователя
+     * @return созданный пользователь
+     */
     @PostMapping
     public UserDto createUser(@RequestBody @Valid NewUserRequest newUserRequest) {
         return userService.createUser(newUserRequest);
     }
 
+    /**
+     * Удаление пользователя.
+     *
+     * @param userId id пользователя
+     */
     @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable @Positive Long userId) {
         userService.deleteUser(userId);
     }
