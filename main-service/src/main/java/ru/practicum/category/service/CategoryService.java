@@ -3,7 +3,26 @@ package ru.practicum.category.service;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 
+import java.util.List;
+
 public interface CategoryService {
+    /**
+     * Получение категорий.
+     *
+     * @param from количество категорий, которые нужно пропустить для формирования текущего набора
+     * @param size количество категорий в наборе
+     * @return список категорий
+     */
+    List<CategoryDto> getAll(int from, int size);
+
+    /**
+     * Получение инфорации о категории.
+     *
+     * @param catId id категории
+     * @return данные категории
+     */
+    CategoryDto get(long catId);
+
     /**
      * Создание категории.
      *
