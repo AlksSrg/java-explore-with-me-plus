@@ -11,6 +11,8 @@ import java.util.List;
 @Setter
 public class UserGetParam {
     private List<Long> ids;
-    private Integer from;
-    private Integer size;
+    @Builder.Default
+    private Integer from = 0;
+    @Builder.Default
+    private Integer size = 10;
 }

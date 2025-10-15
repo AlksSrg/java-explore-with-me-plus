@@ -1,12 +1,6 @@
 package ru.practicum.event.service;
 
-import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.EventRequestStatusUpdateResult;
-import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.dto.NewEventDto;
-import ru.practicum.event.utill.EventGetParameter;
-import ru.practicum.event.utill.EventUpdateParameter;
-import ru.practicum.event.utill.EventUpdateRequestParam;
+import ru.practicum.event.dto.*;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.util.List;
@@ -16,11 +10,12 @@ public interface EventService {
 
     EventFullDto get(long userId, long eventId);
 
-    List<EventShortDto> getAll(EventGetParameter eventGetParameter);
+    List<EventShortDto> getAll(long userId, int from, int size);
 
-    EventFullDto create(NewEventDto eventDto);
+    EventFullDto create(long userId, NewEventDto eventDto);
 
-    EventFullDto update (EventUpdateParameter eventUpdateParameter);
+    EventFullDto update (long userId, long eventId, UpdateEventUserRequest updateEvent);
 
-    EventRequestStatusUpdateResult updateRequestStatus(EventUpdateRequestParam eventUpdateRequestParam);
+    EventRequestStatusUpdateResult updateRequestStatus(long userId, long eventId,
+                                                       EventRequestStatusUpdateRequest eventRequestStatus);
 }

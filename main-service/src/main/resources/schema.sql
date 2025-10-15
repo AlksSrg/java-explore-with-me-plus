@@ -12,5 +12,19 @@ CREATE TABLE IF NOT EXISTS categories(
 
 CREATE TABLE IF NOT EXISTS events(
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    title VARCHAR(120)
+    title VARCHAR(120),
+    annotation VARCHAR(2000),
+    description VARCHAR(7000),
+    category_id BIGINT,
+    event_date timestamp,
+    initiator_id BIGINT,
+    paid boolean,
+    participant_limit integer,
+    request_moderation boolean,
+    created_on timestamp,
+    published_on timestamp,
+    lat real,
+    lot real,
+    FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE,
+    FOREIGN KEY(initiator_id) REFERENCES users(id) ON DELETE CASCADE
 )
