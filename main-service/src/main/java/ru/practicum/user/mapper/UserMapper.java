@@ -21,4 +21,12 @@ public class UserMapper {
                 .email(newUserRequest.getEmail())
                 .build();
     }
+
+    public static User mapFromDto(UserDto userDto) {
+        return User.builder()
+                .id(userDto.getId())
+                .name(userDto.getName())
+                .email(userDto.getEmail())
+                .build();
+    }
 }
