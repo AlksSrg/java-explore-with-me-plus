@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.category.dto.CategoryDto;
+import ru.practicum.event.model.Location;
 import ru.practicum.event.utill.State;
 import ru.practicum.user.dto.UserShortDto;
 
