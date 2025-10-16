@@ -1,22 +1,26 @@
 package ru.practicum.category.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictResource;
 import ru.practicum.exception.NotFoundResource;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CategoryServiceImp implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository; // Добавляем для проверки связанных событий
 
     /**
      * Получение категорий.
@@ -27,28 +31,34 @@ public class CategoryServiceImp implements CategoryService {
      */
     @Override
     public List<CategoryDto> getAll(int from, int size) {
-        return categoryRepository.findAll().stream()
-                .sorted(Comparator.comparing(Category::getId))
-                .skip(from == 0 ? 0 : from - 1)
-                .limit(size)
+        Pageable pageable = PageRequest.of(from / size, size);
+        return categoryRepository.findAll(pageable).stream()
                 .map(CategoryDto::mapFromCategory)
                 .toList();
     }
 
     /**
-     * Получение инфорации о категории.
+     * Получение информации о категории.
      *
      * @param catId id категории
      * @return данные категории
      */
     @Override
     public CategoryDto get(long catId) {
-        Optional<Category> optionalCategory = categoryRepository.findById(catId);
+        Category category = getCategoryById(catId);
+        return CategoryDto.mapFromCategory(category);
+    }
 
-        if (optionalCategory.isEmpty())
-            throw new NotFoundResource("Категория %d не найдена".formatted(catId));
-
-        return CategoryDto.mapFromCategory(optionalCategory.get());
+    /**
+     * Получение сущности категории по ID.
+     *
+     * @param catId id категории
+     * @return сущность категории
+     */
+    @Override
+    public Category getCategoryById(long catId) {
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundResource("Категория с id=" + catId + " не найдена"));
     }
 
     /**
@@ -58,11 +68,18 @@ public class CategoryServiceImp implements CategoryService {
      * @return созданная категория
      */
     @Override
+    @Transactional
     public CategoryDto create(NewCategoryDto categoryDto) {
-        if (categoryRepository.findByNameContainingIgnoreCase(categoryDto.getName()).isPresent())
-            throw new ConflictResource("Категория %s уже существует".formatted(categoryDto.getName()));
+        // Проверка на уникальность имени категории
+        categoryRepository.findByNameContainingIgnoreCase(categoryDto.getName())
+                .ifPresent(category -> {
+                    throw new ConflictResource("Категория '" + categoryDto.getName() + "' уже существует");
+                });
 
-        return CategoryDto.mapFromCategory(categoryRepository.save(categoryDto.mapToCategory()));
+        Category category = categoryDto.mapToCategory();
+        Category savedCategory = categoryRepository.save(category);
+
+        return CategoryDto.mapFromCategory(savedCategory);
     }
 
     /**
@@ -72,15 +89,22 @@ public class CategoryServiceImp implements CategoryService {
      * @return измененная категория
      */
     @Override
+    @Transactional
     public CategoryDto update(CategoryDto categoryDto) {
-        if (categoryRepository.findById(categoryDto.getId()).isEmpty())
-            throw new NotFoundResource("Категория %d не найдена".formatted(categoryDto.getId()));
+        // Проверка существования категории
+        Category existingCategory = getCategoryById(categoryDto.getId());
 
-        if (categoryRepository.findByNameContainingIgnoreCaseAndIdNotIn(categoryDto.getName(),
-                List.of(categoryDto.getId())).isPresent())
-            throw new ConflictResource("Категория %s уже существует".formatted(categoryDto.getName()));
+        // Проверка на уникальность имени (исключая текущую категорию)
+        categoryRepository.findByNameContainingIgnoreCaseAndIdNotIn(categoryDto.getName(),
+                        List.of(categoryDto.getId()))
+                .ifPresent(category -> {
+                    throw new ConflictResource("Категория '" + categoryDto.getName() + "' уже существует");
+                });
 
-        return CategoryDto.mapFromCategory(categoryRepository.save(categoryDto.mapToCategory()));
+        existingCategory.setName(categoryDto.getName());
+        Category updatedCategory = categoryRepository.save(existingCategory);
+
+        return CategoryDto.mapFromCategory(updatedCategory);
     }
 
     /**
@@ -89,11 +113,16 @@ public class CategoryServiceImp implements CategoryService {
      * @param catId id категории
      */
     @Override
+    @Transactional
     public void delete(long catId) {
-        if (categoryRepository.findById(catId).isEmpty())
-            throw new NotFoundResource("Категория %d не найдена".formatted(catId));
+        // Проверка существования категории
+        Category category = getCategoryById(catId);
 
-        // TODO : реализовать проверку: 409 Существуют события, связанные с категорией(пока нет)
+        // Проверка: существуют ли события, связанные с категорией
+        boolean hasEvents = eventRepository.existsByCategoryId(catId);
+        if (hasEvents) {
+            throw new ConflictResource("Нельзя удалить категорию: существуют события, связанные с этой категорией");
+        }
 
         categoryRepository.deleteById(catId);
     }

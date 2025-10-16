@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.event.model.Location;
-import ru.practicum.event.utill.StateActionUser;
+import ru.practicum.event.utill.StateActionAdmin;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEventUserRequest {
+public class UpdateEventAdminRequest {
 
     @Size(min = 20, max = 2000, message = "Краткое описание события должно быть от 20 до 2000 символов")
     private String annotation;
@@ -34,7 +34,7 @@ public class UpdateEventUserRequest {
 
     private Boolean requestModeration;
 
-    private StateActionUser stateAction;
+    private StateActionAdmin stateAction;
 
     @Size(min = 3, max = 120, message = "Заголовок события должен быть от 3 до 120 символов")
     private String title;

@@ -21,41 +21,47 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(nullable = false, length = 120)
     private String title;
 
+    @Column(nullable = false, length = 2000)
     private String annotation;
 
+    @Column(nullable = false, length = 7000)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "event_date")
+    @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
-    private float lat;
+    @Embedded
+    private Location location;
 
-    private float lon;
+    @Column(nullable = false)
+    private Boolean paid = false;
 
-    private boolean paid;
+    @Column(name = "participant_limit", nullable = false)
+    private Integer participantLimit = 0;
 
-    @Column(name = "participant_limit")
-    private int participantLimit;
+    @Column(name = "request_moderation", nullable = false)
+    private Boolean requestModeration = true;
 
-    @Column(name = "request_moderation")
-    private boolean requestModeration = true;
-
-    @Column(name = "created_on")
+    @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
 
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    @Column(nullable = false, length = 20)
+    private State state = State.PENDING;
 
     @Override
     public boolean equals(Object o) {

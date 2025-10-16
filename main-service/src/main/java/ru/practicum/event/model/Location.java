@@ -1,11 +1,7 @@
 package ru.practicum.event.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.Embeddable;
+import lombok.*;
 
 @Getter
 @Setter
@@ -13,8 +9,8 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Embeddable
 public class Location {
-	private Float lat;
-	private Float lon;
+    private Float lat;
+    private Float lon;
 }
