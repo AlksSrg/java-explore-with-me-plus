@@ -1,10 +1,13 @@
 package ru.practicum.event.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
@@ -23,6 +26,8 @@ import ru.practicum.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,9 +59,17 @@ public class EventServiceImp implements EventService {
     @Override
     public List<EventShortDto> getAll(long userId, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size);
-        return eventRepository.findByInitiatorId(userId, pageable).stream()
+
+        Map<Long, Event> eventMap = eventRepository.findByInitiatorId(userId, pageable).stream()
+                .collect(Collectors.toMap(Event::getId, Function.identity()));
+        Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
+                        Status.CONFIRMED).stream()
+                .collect(Collectors.groupingBy( request -> request.getEvent().getId(),
+                        Collectors.counting()));
+
+        return eventMap.values().stream()
                 .map(event -> {
-                    Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
+                    Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
                     Long views = 0L; // Получать из статистики
                     return EventMapper.mapToEventShortDto(event, confirmedRequests, views);
                 })
@@ -66,10 +79,11 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public EventFullDto create(long userId, NewEventDto eventDto) {
-        // Проверка времени события
-        if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictResource("Дата события должна быть не ранее чем через 2 часа от текущего момента");
-        }
+// по идее это не нужно, аннотация CustomFuture должна перехватить
+//        // Проверка времени события
+//        if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+//            throw new ConflictResource("Дата события должна быть не ранее чем через 2 часа от текущего момента");
+//        }
 
         eventDto.setCategoryObject(categoryService.getCategoryById(eventDto.getCategory()));
         eventDto.setInitiatorObject(userService.getUserById(userId));

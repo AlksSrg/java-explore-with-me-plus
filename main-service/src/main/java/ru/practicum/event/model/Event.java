@@ -42,6 +42,10 @@ public class Event {
     private User initiator;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lat", column = @Column(name = "location_lat")),
+            @AttributeOverride(name = "lon", column = @Column(name = "location_lon")),
+    })
     private Location location;
 
     @Column(nullable = false)
@@ -67,11 +71,11 @@ public class Event {
     @Builder.Default
     private State state = State.PENDING;
 
-    @Column(name = "views")
+    @Transient
     @Builder.Default
     private Long views = 0L;
 
-    @Column(name = "confirmed_requests")
+    @Transient
     @Builder.Default
     private Long confirmedRequests = 0L;
 
