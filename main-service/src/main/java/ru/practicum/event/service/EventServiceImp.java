@@ -1,13 +1,12 @@
 package ru.practicum.event.service;
 
+import dto.ViewStatsDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import ru.practicum.StatsClient;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
@@ -27,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,6 +38,7 @@ public class EventServiceImp implements EventService {
     private final UserService userService;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     @Override
     public List<ParticipationRequestDto> getRequests(long userId, long eventId) {
@@ -64,13 +65,22 @@ public class EventServiceImp implements EventService {
                 .collect(Collectors.toMap(Event::getId, Function.identity()));
         Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
                         Status.CONFIRMED).stream()
-                .collect(Collectors.groupingBy( request -> request.getEvent().getId(),
+                .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
                         Collectors.counting()));
+        List<String> listUrl = eventMap.keySet().stream()
+                .map("/events/%d"::formatted)
+                .toList();
+        Optional<LocalDateTime> start = eventMap.values().stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo);
+        Map<String, Long> statsCount = statsClient.getStats(start.get(), LocalDateTime.now(), listUrl, true)
+                .stream()
+                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
 
         return eventMap.values().stream()
                 .map(event -> {
                     Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
-                    Long views = 0L; // Получать из статистики
+                    Long views = statsCount.getOrDefault("/events/%d".formatted(event.getId()), 0L); // Получать из статистики
                     return EventMapper.mapToEventShortDto(event, confirmedRequests, views);
                 })
                 .collect(Collectors.toList());
