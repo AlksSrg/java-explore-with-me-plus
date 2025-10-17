@@ -45,12 +45,15 @@ public class Event {
     private Location location;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean paid = false;
 
     @Column(name = "participant_limit", nullable = false)
+    @Builder.Default
     private Integer participantLimit = 0;
 
     @Column(name = "request_moderation", nullable = false)
+    @Builder.Default
     private Boolean requestModeration = true;
 
     @Column(name = "created_on", nullable = false)
@@ -61,7 +64,16 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private State state = State.PENDING;
+
+    @Column(name = "views")
+    @Builder.Default
+    private Long views = 0L;
+
+    @Column(name = "confirmed_requests")
+    @Builder.Default
+    private Long confirmedRequests = 0L;
 
     @Override
     public boolean equals(Object o) {

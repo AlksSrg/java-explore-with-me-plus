@@ -2,7 +2,10 @@ package ru.practicum.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.model.Location;
@@ -37,10 +40,13 @@ public class NewEventDto {
     @NotNull(message = "Широта и долгота должны быть заполнены")
     private Location location;
 
-    private boolean paid;
+    @Builder.Default
+    private boolean paid = false;
 
-    private int participantLimit;
+    @Builder.Default
+    private int participantLimit = 0;
 
+    @Builder.Default
     private boolean requestModeration = true;
 
     @NotBlank(message = "Заголовок события должен быть заполнен")
@@ -57,5 +63,6 @@ public class NewEventDto {
     private User initiatorObject;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final LocalDateTime createdOn = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime createdOn = LocalDateTime.now();
 }
