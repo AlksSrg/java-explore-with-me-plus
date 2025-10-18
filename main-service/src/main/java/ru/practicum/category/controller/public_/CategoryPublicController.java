@@ -31,7 +31,7 @@ public class CategoryPublicController {
     }
 
     /**
-     * Получение инфорации о категории.
+     * Получение информации о категории.
      *
      * @param catId id категории
      * @return данные категории

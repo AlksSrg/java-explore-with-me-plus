@@ -21,6 +21,6 @@ public class UpdateCompilationRequest {
 
     private Boolean pinned;
 
-    @Size(min = 1, max = 50, message = "Title length must be between 1 and 50 characters")
+    @Size(min = 1, max = 50, message = "Длина заголовка должна составлять от 1 до 50 символов")
     private String title;
 }

@@ -52,13 +52,10 @@ public class EventServiceImp implements EventService {
     @Override
     public EventFullDto get(long userId, long eventId) {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
-//        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        // Здесь должна быть логика подсчета просмотров из статистики
-        //Long views = 0L;
+        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        Long views = getViewsForEvent(event.getCreatedOn(), eventId);
 
-        event.setConfirmedRequests(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED));
-        event.setViews(getViewsForEvent(event.getCreatedOn(), eventId));
-        return EventMapper.mapToEventFullDto(event);
+        return EventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -67,52 +64,53 @@ public class EventServiceImp implements EventService {
 
         Map<Long, Event> eventMap = eventRepository.findByInitiatorId(userId, pageable).stream()
                 .collect(Collectors.toMap(Event::getId, Function.identity()));
+
         if (!eventMap.isEmpty()) {
             Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
                             Status.CONFIRMED).stream()
                     .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
                             Collectors.counting()));
+
             List<String> listUrl = eventMap.keySet().stream()
                     .map(EVENT_URI_PATTERN::formatted)
-                    .toList();
+                    .collect(Collectors.toList());
+
             Optional<LocalDateTime> start = eventMap.values().stream()
                     .map(Event::getCreatedOn)
                     .min(LocalDateTime::compareTo);
+
             Map<String, Long> statsCount = statsClient
-                    .getStats(start.get(), LocalDateTime.now(), listUrl, true)
+                    .getStats(start.orElse(LocalDateTime.now().minusYears(1)), LocalDateTime.now(), listUrl, true)
                     .stream()
                     .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
 
             eventMap = eventMap.values().stream()
-                    .map(event ->
-                            event.toBuilder()
-                                    .confirmedRequests(eventCountRequest.getOrDefault(event.getId(), 0L))
-                                    .views(statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()),
-                                            0L)).build()
-                    )
-                    .collect(Collectors.toMap(Event::getId, event -> event));
+                    .map(event -> {
+                        Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
+                        Long views = statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()), 0L);
+                        return event.toBuilder()
+                                .confirmedRequests(confirmedRequests)
+                                .views(views)
+                                .build();
+                    })
+                    .collect(Collectors.toMap(Event::getId, Function.identity()));
         }
 
         return eventMap.values().stream()
-                .map(EventMapper::mapToEventShortDto).collect(Collectors.toList());
+                .map(EventMapper::mapToEventShortDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public EventFullDto create(long userId, NewEventDto eventDto) {
-// по идее это не нужно, аннотация CustomFuture должна перехватить
-//        // Проверка времени события
-//        if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-//            throw new ConflictResource("Дата события должна быть не ранее чем через 2 часа от текущего момента");
-//        }
-
         eventDto.setCategoryObject(categoryService.getCategoryById(eventDto.getCategory()));
         eventDto.setInitiatorObject(userService.getUserById(userId));
 
         Event event = EventMapper.mapFromNewEventDto(eventDto);
         Event savedEvent = eventRepository.save(event);
 
-        return EventMapper.mapToEventFullDto(savedEvent);
+        return EventMapper.toEventFullDto(savedEvent, 0L, 0L);
     }
 
     @Override
@@ -120,12 +118,10 @@ public class EventServiceImp implements EventService {
     public EventFullDto update(long userId, long eventId, UpdateEventUserRequest updateEvent) {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
 
-        // Проверка состояния события
         if (event.getState() == State.PUBLISHED) {
             throw new ConflictResource("Нельзя редактировать опубликованное событие");
         }
 
-        // Проверка времени события
         if (updateEvent.getEventDate() != null &&
                 updateEvent.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new ConflictResource("Дата события должна быть не ранее чем через 2 часа от текущего момента");
@@ -133,7 +129,6 @@ public class EventServiceImp implements EventService {
 
         updateEventFields(event, updateEvent);
 
-        // Обработка stateAction
         if (updateEvent.getStateAction() != null) {
             switch (updateEvent.getStateAction()) {
                 case SEND_TO_REVIEW:
@@ -146,12 +141,10 @@ public class EventServiceImp implements EventService {
         }
 
         Event updatedEvent = eventRepository.save(event);
-        //Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        //Long views = 0L; // Получать из статистики
-        updatedEvent.setConfirmedRequests(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED));
-        updatedEvent.setViews(getViewsForEvent(event.getCreatedOn(), eventId));
+        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        Long views = getViewsForEvent(event.getCreatedOn(), eventId);
 
-        return EventMapper.mapToEventFullDto(updatedEvent);
+        return EventMapper.toEventFullDto(updatedEvent, confirmedRequests, views);
     }
 
     @Override
@@ -160,16 +153,14 @@ public class EventServiceImp implements EventService {
                                                               EventRequestStatusUpdateRequest eventRequestStatus) {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
 
-        // TODO : здесь скорее всего нужно выкидывать не 409, а 400
-        // Проверка модерации
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             throw new ConflictResource("Подтверждение заявок не требуется для этого события");
         }
 
         Long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        // TODO : похоже не учтено отсутствие ограничения на кол-во участников
+
         if (eventRequestStatus.getStatus() == Status.CONFIRMED &&
-                confirmedCount >= event.getParticipantLimit()) {
+                event.getParticipantLimit() > 0 && confirmedCount >= event.getParticipantLimit()) {
             throw new ConflictResource("Достигнут лимит участников");
         }
 
@@ -183,7 +174,7 @@ public class EventServiceImp implements EventService {
             }
 
             if (eventRequestStatus.getStatus() == Status.CONFIRMED &&
-                    confirmedCount < event.getParticipantLimit()) {
+                    (event.getParticipantLimit() == 0 || confirmedCount < event.getParticipantLimit())) {
                 request.setStatus(Status.CONFIRMED);
                 confirmed.add(RequestMapper.mapToParticipationRequestDto(request));
                 confirmedCount++;
@@ -199,6 +190,33 @@ public class EventServiceImp implements EventService {
                 .confirmedRequests(confirmed)
                 .rejectedRequests(rejected)
                 .build();
+    }
+
+    @Override
+    public List<EventFullDto> getEventsByAdmin(List<Long> users, List<State> states, List<Long> categories,
+                                               LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        // TODO: Implement admin events retrieval
+        return List.of();
+    }
+
+    @Override
+    public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
+        // TODO: Implement admin event update
+        return null;
+    }
+
+    @Override
+    public List<EventShortDto> getEventsByPublic(String text, List<Long> categories, Boolean paid,
+                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                 Boolean onlyAvailable, String sort, int from, int size) {
+        // TODO: Implement public events retrieval
+        return List.of();
+    }
+
+    @Override
+    public EventFullDto getEventByPublic(long eventId) {
+        // TODO: Implement public event retrieval
+        return null;
     }
 
     // Вспомогательные методы
@@ -240,33 +258,9 @@ public class EventServiceImp implements EventService {
     private Long getViewsForEvent(LocalDateTime start, Long eventId) {
         List<ViewStatsDto> listStats = statsClient.getStats(start, LocalDateTime.now(),
                 List.of(EVENT_URI_PATTERN.formatted(eventId)), true);
-        if (!listStats.isEmpty())
-            return listStats.getFirst().getHits();
-
+        if (!listStats.isEmpty()) {
+            return listStats.get(0).getHits();
+        }
         return 0L;
-    }
-
-    // Реализации методов для администратора и публичного API
-    @Override
-    public List<EventFullDto> getEventsByAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                               LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-        return List.of();
-    }
-
-    @Override
-    public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        return null;
-    }
-
-    @Override
-    public List<EventShortDto> getEventsByPublic(String text, List<Long> categories, Boolean paid,
-                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                 Boolean onlyAvailable, String sort, int from, int size) {
-        return List.of();
-    }
-
-    @Override
-    public EventFullDto getEventByPublic(long eventId) {
-        return null;
     }
 }

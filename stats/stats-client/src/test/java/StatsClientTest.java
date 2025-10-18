@@ -2,7 +2,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ViewStatsDto;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.practicum.StatsClient;
 import ru.practicum.StatsClient;
 
 import java.io.IOException;
@@ -43,7 +47,7 @@ class StatsClientTest {
                         .app("ewm-main-service")
                         .uri("/events/1")
                         .hits(50L)
-                .build(),
+                        .build(),
                 ViewStatsDto.builder()
                         .app("ewm-main-service")
                         .uri("/events/100")
@@ -78,6 +82,6 @@ class StatsClientTest {
 
     @AfterEach
     public void afterEach() throws IOException {
-         mockWebServer.shutdown();
+        mockWebServer.shutdown();
     }
 }

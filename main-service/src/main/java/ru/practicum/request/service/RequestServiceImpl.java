@@ -44,7 +44,7 @@ public class RequestServiceImpl implements RequestService {
         Event event = getEventById(eventId);
 
         // Проверка, что пользователь не является инициатором события
-        if (event.getInitiator().getId() == userId) {
+        if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictResource("Инициатор события не может подать заявку на участие в своём событии");
         }
 
@@ -54,7 +54,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         // Проверка, что заявка уже существует
-        if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
+        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new ConflictResource("Заявка на участие в этом событии уже существует");
         }
 
@@ -64,12 +64,17 @@ public class RequestServiceImpl implements RequestService {
             throw new ConflictResource("Достигнут лимит участников для этого события");
         }
 
+        // Определение статуса заявки
+        Status status = Status.PENDING;
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            status = Status.CONFIRMED;
+        }
+
         Request request = Request.builder()
                 .created(LocalDateTime.now())
                 .event(event)
                 .requester(user)
-                .status(event.getRequestModeration() && event.getParticipantLimit() > 0 ?
-                        Status.PENDING : Status.CONFIRMED)
+                .status(status)
                 .build();
 
         Request savedRequest = requestRepository.save(request);
@@ -88,6 +93,7 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.mapToParticipationRequestDto(updatedRequest);
     }
 
+    // Вспомогательные методы
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundResource("Пользователь с id=" + userId + " не найден"));
@@ -95,12 +101,11 @@ public class RequestServiceImpl implements RequestService {
 
     private Event getEventById(Long eventId) {
         return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundResource("Событие с id=" + eventId + " не найден"));
+                .orElseThrow(() -> new NotFoundResource("Событие с id=" + eventId + " не найдено"));
     }
 
     private Request getRequestByIdAndRequesterId(Long requestId, Long requesterId) {
-        return requestRepository.findById(requestId)
-                .filter(request -> request.getRequester().getId() == requesterId)
+        return requestRepository.findByIdAndRequesterId(requestId, requesterId)
                 .orElseThrow(() -> new NotFoundResource("Заявка с id=" + requestId + " не найдена"));
     }
 
