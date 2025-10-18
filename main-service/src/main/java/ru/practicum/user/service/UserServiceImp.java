@@ -1,8 +1,11 @@
 package ru.practicum.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.practicum.exception.ConflictResource;
 import ru.practicum.exception.NotFoundResource;
@@ -13,17 +16,16 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.utill.UserGetParam;
 
-import java.util.Comparator;
 import java.util.List;
-
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
 
     /**
-     * Получает перечь пользователей.
+     * Получает перечень пользователей.
      *
      * @param userGetParam параметры запроса
      * @return список пользователей
@@ -32,17 +34,28 @@ public class UserServiceImp implements UserService {
     public List<UserDto> getUsers(UserGetParam userGetParam) {
         List<User> users;
 
-        if (userGetParam.getIds() != null)
+        if (userGetParam.getIds() != null && !userGetParam.getIds().isEmpty()) {
             users = userRepository.findAllByIdIn(userGetParam.getIds());
-        else
-            users = userRepository.findAll();
+        } else {
+            Pageable pageable = PageRequest.of(userGetParam.getFrom() / userGetParam.getSize(), userGetParam.getSize());
+            users = userRepository.findAll(pageable).getContent();
+        }
 
-        return users == null ? List.of() : users.stream()
-                .sorted(Comparator.comparing(User::getId))
-                .skip(userGetParam.getFrom() == 0 ? 0 : userGetParam.getFrom() - 1)
-                .limit(userGetParam.getSize())
+        return users.stream()
                 .map(UserMapper::mapToDto)
                 .toList();
+    }
+
+    /**
+     * Получение пользователя по ID.
+     *
+     * @param userId id пользователя
+     * @return пользователь
+     */
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundResource("Пользователь с id=" + userId + " не найден"));
     }
 
     /**
@@ -52,11 +65,18 @@ public class UserServiceImp implements UserService {
      * @return созданный пользователь
      */
     @Override
+    @Transactional
     public UserDto createUser(NewUserRequest newUserRequest) {
-        if (userRepository.findByEmailContainingIgnoreCase(newUserRequest.getEmail()).isPresent())
-            throw new ConflictResource("Пользователь с email - %s уже существует".formatted(newUserRequest.getEmail()));
+        // Проверка уникальности email
+        userRepository.findByEmailContainingIgnoreCase(newUserRequest.getEmail())
+                .ifPresent(user -> {
+                    throw new ConflictResource("Пользователь с email '" + newUserRequest.getEmail() + "' уже существует");
+                });
 
-        return UserMapper.mapToDto(userRepository.save(UserMapper.mapToUser(newUserRequest)));
+        User user = UserMapper.mapToUser(newUserRequest);
+        User savedUser = userRepository.save(user);
+
+        return UserMapper.mapToDto(savedUser);
     }
 
     /**
@@ -65,10 +85,13 @@ public class UserServiceImp implements UserService {
      * @param userId id пользователя
      */
     @Override
+    @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(Long userId) {
-        if (userRepository.findById(userId).isEmpty())
-            throw new NotFoundResource("Пользователь с id - %d не найден".formatted(userId));
+        // Проверка существования пользователя
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundResource("Пользователь с id=" + userId + " не найден");
+        }
 
         userRepository.deleteById(userId);
     }

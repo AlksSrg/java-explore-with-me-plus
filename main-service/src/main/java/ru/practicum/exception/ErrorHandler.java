@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.event.validate.ErrorCustomFuture;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,7 +35,7 @@ public class ErrorHandler {
                 .message(ex.getMessage())
                 .reason("Запрашиваемый объект не найден")
                 .status(HttpStatus.NOT_FOUND.toString())
-                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
                 .build();
     }
 
@@ -45,8 +46,20 @@ public class ErrorHandler {
         return ApiError.builder()
                 .message(ex.getMessage())
                 .reason("Нарушено ограничение целостности")
-                .status(HttpStatus.NOT_FOUND.toString())
-                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .status(HttpStatus.CONFLICT.toString())
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleErrorCustomFuture(ErrorCustomFuture ex) {
+        log.error(convertStackTraceToString(ex));
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Нарушено ограничение целостности")
+                .status(HttpStatus.CONFLICT.toString())
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
                 .build();
     }
 
@@ -58,7 +71,7 @@ public class ErrorHandler {
                 .message(ex.getMessage())
                 .reason("Некорректные параметры")
                 .status(HttpStatus.BAD_REQUEST.toString())
-                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
                 .build();
     }
 
@@ -70,7 +83,7 @@ public class ErrorHandler {
                 .message(ex.getMessage())
                 .reason("Некорректные параметры")
                 .status(HttpStatus.BAD_REQUEST.toString())
-                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
                 .build();
     }
 
@@ -82,7 +95,7 @@ public class ErrorHandler {
                 .message(ex.getMessage())
                 .reason(ex.getMessage())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.toString())
-                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .timestamp(LocalDateTime.parse(LocalDateTime.now().format(FORMAT_DATE_TIME)))
                 .build();
     }
 }

@@ -3,6 +3,8 @@ package ru.practicum.complitation.dto;
 import java.util.List;
 
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,11 +20,16 @@ import ru.practicum.event.dto.EventShortDto;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompilationDto {
-	private List<EventShortDto> events;
+    private List<EventShortDto> events;
 
-	@Positive
-	private Long id;
+    @Positive
+    @NotNull
+    private Long id;
 
-	private boolean pinned;
-	private String title;
+    @NotNull
+    private Boolean pinned;
+
+    @NotBlank
+    @NotNull
+    private String title;
 }

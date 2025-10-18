@@ -18,7 +18,7 @@ import ru.practicum.category.model.Category;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCategoryDto {
-    @Length(min = 1, message = "Длина названия категории не болжна быть меньше 1 символа")
+    @Length(min = 1, message = "Длина названия категории не должна быть меньше 1 символа")
     @Length(max = 50, message = "Длина названия категории не должна быть больше 50 символов")
     @NotBlank
     private String name;

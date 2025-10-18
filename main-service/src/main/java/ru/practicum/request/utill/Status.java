@@ -1,5 +1,8 @@
 package ru.practicum.request.utill;
 
 public enum Status {
-    // TODO : НАКИДАТЬ СТАТУСОВ
+    PENDING,    // В ожидании
+    CONFIRMED,  // Подтверждено
+    CANCELED,   // Отменено
+    REJECTED    // Отклонено
 }

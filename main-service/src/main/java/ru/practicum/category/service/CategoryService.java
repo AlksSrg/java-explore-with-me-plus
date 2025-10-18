@@ -2,6 +2,7 @@ package ru.practicum.category.service;
 
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
+import ru.practicum.category.model.Category;
 
 import java.util.List;
 
@@ -16,12 +17,20 @@ public interface CategoryService {
     List<CategoryDto> getAll(int from, int size);
 
     /**
-     * Получение инфорации о категории.
+     * Получение информации о категории.
      *
      * @param catId id категории
      * @return данные категории
      */
     CategoryDto get(long catId);
+
+    /**
+     * Получение сущности категории по ID.
+     *
+     * @param catId id категории
+     * @return сущность категории
+     */
+    Category getCategoryById(long catId);
 
     /**
      * Создание категории.

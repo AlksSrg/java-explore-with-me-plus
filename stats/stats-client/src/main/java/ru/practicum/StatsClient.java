@@ -1,3 +1,5 @@
+package ru.practicum;
+
 import dto.EndpointHitDto;
 import dto.ViewStatsDto;
 import lombok.extern.slf4j.Slf4j;
