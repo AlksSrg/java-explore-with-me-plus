@@ -1,4 +1,4 @@
-package ru.practicum.complitation.service;
+package ru.practicum.compilation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,19 +6,20 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.complitation.dto.CompilationDto;
-import ru.practicum.complitation.dto.NewCompilationDto;
-import ru.practicum.complitation.dto.UpdateCompilationRequest;
-import ru.practicum.complitation.mapper.CompilationMapper;
-import ru.practicum.complitation.model.Compilation;
-import ru.practicum.complitation.repository.CompilationRepository;
+import ru.practicum.compilation.dto.CompilationDto;
+import ru.practicum.compilation.dto.NewCompilationDto;
+import ru.practicum.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.compilation.mapper.CompilationMapper;
+import ru.practicum.compilation.model.Compilation;
+import ru.practicum.compilation.repository.CompilationRepository;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictResource;
 import ru.practicum.exception.NotFoundResource;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +30,9 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    private final CompilationMapper compilationMapper;
 
     @Override
+    @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         log.info("Creating new compilation with title: {}", newCompilationDto.getTitle());
 
@@ -40,33 +41,27 @@ public class CompilationServiceImpl implements CompilationService {
             throw new ConflictResource("Compilation with title '" + newCompilationDto.getTitle() + "' already exists");
         }
 
-        Compilation compilation = compilationMapper.toEntity(newCompilationDto);
-
-        // Устанавливаем значение pinned (по умолчанию false)
-        if (newCompilationDto.getPinned() == null) {
-            compilation.setPinned(false);
-        } else {
-            compilation.setPinned(newCompilationDto.getPinned());
-        }
+        Compilation compilation = CompilationMapper.toEntity(newCompilationDto);
 
         // Добавляем события если они указаны
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
             List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
-            compilation.setEvents(events);
+            compilation.setEvents(new HashSet<>(events));
         } else {
-            compilation.setEvents(new ArrayList<>());
+            compilation.setEvents(new HashSet<>());
         }
 
         try {
             Compilation savedCompilation = compilationRepository.save(compilation);
             log.info("Compilation created successfully with id: {}", savedCompilation.getId());
-            return compilationMapper.toDto(savedCompilation);
+            return CompilationMapper.toDto(savedCompilation);
         } catch (DataIntegrityViolationException e) {
             throw new ConflictResource("Compilation creation failed due to data integrity violation");
         }
     }
 
     @Override
+    @Transactional
     public void deleteCompilation(Long compId) {
         log.info("Deleting compilation with id: {}", compId);
 
@@ -78,6 +73,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateRequest) {
         log.info("Updating compilation with id: {}", compId);
 
@@ -85,7 +81,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .orElseThrow(() -> new NotFoundResource("Compilation with id=" + compId + " was not found"));
 
         // Обновление title если указано
-        if (updateRequest.getTitle() != null) {
+        if (updateRequest.getTitle() != null && !updateRequest.getTitle().isBlank()) {
             if (!compilation.getTitle().equals(updateRequest.getTitle()) &&
                     compilationRepository.existsByTitle(updateRequest.getTitle())) {
                 throw new ConflictResource("Compilation with title '" + updateRequest.getTitle() + "' already exists");
@@ -100,14 +96,14 @@ public class CompilationServiceImpl implements CompilationService {
 
         // Обновление событий если указано
         if (updateRequest.getEvents() != null) {
-            List<Event> events = eventRepository.findAllById(updateRequest.getEvents());
+            Set<Event> events = new HashSet<>(eventRepository.findAllById(updateRequest.getEvents()));
             compilation.setEvents(events);
         }
 
         try {
             Compilation updatedCompilation = compilationRepository.save(compilation);
             log.info("Compilation with id: {} updated successfully", compId);
-            return compilationMapper.toDto(updatedCompilation);
+            return CompilationMapper.toDto(updatedCompilation);
         } catch (DataIntegrityViolationException e) {
             throw new ConflictResource("Compilation update failed due to data integrity violation");
         }
@@ -126,7 +122,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         return compilations.stream()
-                .map(compilationMapper::toDto)
+                .map(CompilationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -138,6 +134,6 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundResource("Compilation with id=" + compId + " was not found"));
 
-        return compilationMapper.toDto(compilation);
+        return CompilationMapper.toDto(compilation);
     }
 }
