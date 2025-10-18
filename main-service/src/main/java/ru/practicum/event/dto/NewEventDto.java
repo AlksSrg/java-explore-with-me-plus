@@ -2,10 +2,7 @@ package ru.practicum.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.model.Location;
@@ -44,6 +41,7 @@ public class NewEventDto {
     private boolean paid = false;
 
     @Builder.Default
+    @PositiveOrZero
     private int participantLimit = 0;
 
     @Builder.Default

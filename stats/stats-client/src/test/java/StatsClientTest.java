@@ -3,6 +3,7 @@ import dto.ViewStatsDto;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.*;
+import ru.practicum.StatsClient;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

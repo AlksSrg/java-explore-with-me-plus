@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class EventServiceImp implements EventService {
+    private static final String EVENT_URI_PATTERN = "/events/%d";
     private final CategoryService categoryService;
     private final UserService userService;
     private final EventRepository eventRepository;
@@ -51,10 +52,13 @@ public class EventServiceImp implements EventService {
     @Override
     public EventFullDto get(long userId, long eventId) {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
-        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+//        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         // Здесь должна быть логика подсчета просмотров из статистики
-        Long views = 0L;
-        return EventMapper.mapToEventFullDto(event, confirmedRequests, views);
+        //Long views = 0L;
+
+        event.setConfirmedRequests(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED));
+        event.setViews(getViewsForEvent(event.getCreatedOn(), eventId));
+        return EventMapper.mapToEventFullDto(event);
     }
 
     @Override
@@ -63,27 +67,32 @@ public class EventServiceImp implements EventService {
 
         Map<Long, Event> eventMap = eventRepository.findByInitiatorId(userId, pageable).stream()
                 .collect(Collectors.toMap(Event::getId, Function.identity()));
-        Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
-                        Status.CONFIRMED).stream()
-                .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
-                        Collectors.counting()));
-        List<String> listUrl = eventMap.keySet().stream()
-                .map("/events/%d"::formatted)
-                .toList();
-        Optional<LocalDateTime> start = eventMap.values().stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo);
-        Map<String, Long> statsCount = statsClient.getStats(start.get(), LocalDateTime.now(), listUrl, true)
-                .stream()
-                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+        if (!eventMap.isEmpty()) {
+            Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
+                            Status.CONFIRMED).stream()
+                    .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
+                            Collectors.counting()));
+            List<String> listUrl = eventMap.keySet().stream()
+                    .map(EVENT_URI_PATTERN::formatted)
+                    .toList();
+            Optional<LocalDateTime> start = eventMap.values().stream()
+                    .map(Event::getCreatedOn)
+                    .min(LocalDateTime::compareTo);
+            Map<String, Long> statsCount = statsClient
+                    .getStats(start.get(), LocalDateTime.now(), listUrl, true)
+                    .stream()
+                    .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+
+            eventMap = eventMap.values().stream()
+                    .map( event ->  { return  event.toBuilder()
+                            .confirmedRequests(eventCountRequest.getOrDefault(event.getId(), 0L))
+                            .views(statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()),
+                                    0L)).build();})
+                    .collect(Collectors.toMap(Event::getId, event -> event));
+        }
 
         return eventMap.values().stream()
-                .map(event -> {
-                    Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
-                    Long views = statsCount.getOrDefault("/events/%d".formatted(event.getId()), 0L); // Получать из статистики
-                    return EventMapper.mapToEventShortDto(event, confirmedRequests, views);
-                })
-                .collect(Collectors.toList());
+                .map(EventMapper::mapToEventShortDto).collect(Collectors.toList());
     }
 
     @Override
@@ -101,7 +110,7 @@ public class EventServiceImp implements EventService {
         Event event = EventMapper.mapFromNewEventDto(eventDto);
         Event savedEvent = eventRepository.save(event);
 
-        return EventMapper.mapToEventFullDto(savedEvent, 0L, 0L);
+        return EventMapper.mapToEventFullDto(savedEvent);
     }
 
     @Override
@@ -135,10 +144,12 @@ public class EventServiceImp implements EventService {
         }
 
         Event updatedEvent = eventRepository.save(event);
-        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        Long views = 0L; // Получать из статистики
+        //Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        //Long views = 0L; // Получать из статистики
+        updatedEvent.setConfirmedRequests(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED));
+        updatedEvent.setViews(getViewsForEvent(event.getCreatedOn(), eventId));
 
-        return EventMapper.mapToEventFullDto(updatedEvent, confirmedRequests, views);
+        return EventMapper.mapToEventFullDto(updatedEvent);
     }
 
     @Override
@@ -147,12 +158,14 @@ public class EventServiceImp implements EventService {
                                                               EventRequestStatusUpdateRequest eventRequestStatus) {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
 
+        // TODO : здесь скорее всего нужно выкидывать не 409, а 400
         // Проверка модерации
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             throw new ConflictResource("Подтверждение заявок не требуется для этого события");
         }
 
         Long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        // TODO : похоже не учтено отсутствие ограничения на кол-во участников
         if (eventRequestStatus.getStatus() == Status.CONFIRMED &&
                 confirmedCount >= event.getParticipantLimit()) {
             throw new ConflictResource("Достигнут лимит участников");
@@ -220,6 +233,15 @@ public class EventServiceImp implements EventService {
         if (updateEvent.getTitle() != null) {
             event.setTitle(updateEvent.getTitle());
         }
+    }
+
+    private Long getViewsForEvent(LocalDateTime start, Long eventId) {
+        List<ViewStatsDto> listStats = statsClient.getStats(start, LocalDateTime.now(),
+                List.of(EVENT_URI_PATTERN.formatted(eventId)), true);
+        if (!listStats.isEmpty())
+           return listStats.getFirst().getHits();
+
+        return 0L;
     }
 
     // Реализации методов для администратора и публичного API

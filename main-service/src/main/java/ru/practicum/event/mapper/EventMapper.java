@@ -106,12 +106,13 @@ public interface EventMapper {
                 .build();
     }
 
-    static EventFullDto mapToEventFullDto(Event event, Long confirmedRequests, Long views) {
+    static EventFullDto mapToEventFullDto(Event event) { //, Long confirmedRequests, Long views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryDto.mapFromCategory(event.getCategory()))
-                .confirmedRequests(confirmedRequests != null ? confirmedRequests : 0L)
+                //.confirmedRequests(confirmedRequests != null ? confirmedRequests : 0L)
+                .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn().format(FORMATTER))
                 .description(event.getDescription())
                 .eventDate(event.getEventDate().format(FORMATTER))
@@ -126,16 +127,18 @@ public interface EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .views(views != null ? views : 0L)
+                //.views(views != null ? views : 0L)
+                .views(event.getViews())
                 .build();
     }
 
-    static EventShortDto mapToEventShortDto(Event event, Long confirmedRequests, Long views) {
+    static EventShortDto mapToEventShortDto(Event event) { //, Long confirmedRequests, Long views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryDto.mapFromCategory(event.getCategory()))
-                .confirmedRequests(confirmedRequests != null ? confirmedRequests : 0L)
+                //.confirmedRequests(confirmedRequests != null ? confirmedRequests : 0L)
+                .confirmedRequests(event.getConfirmedRequests())
                 .eventDate(event.getEventDate().format(FORMATTER))
                 .initiator(UserShortDto.builder()
                         .id(event.getInitiator().getId())
@@ -143,7 +146,8 @@ public interface EventMapper {
                         .build())
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(views != null ? views : 0L)
+                //.views(views != null ? views : 0L)
+                .views(event.getViews())
                 .build();
     }
 }

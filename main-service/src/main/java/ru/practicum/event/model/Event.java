@@ -9,7 +9,7 @@ import ru.practicum.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Builder
+@Builder(toBuilder = true)
 @Table(name = "events")
 @Entity
 @Getter
