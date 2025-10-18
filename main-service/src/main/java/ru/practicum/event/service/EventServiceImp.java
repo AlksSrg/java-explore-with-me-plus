@@ -84,10 +84,12 @@ public class EventServiceImp implements EventService {
                     .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
 
             eventMap = eventMap.values().stream()
-                    .map( event ->  { return  event.toBuilder()
-                            .confirmedRequests(eventCountRequest.getOrDefault(event.getId(), 0L))
-                            .views(statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()),
-                                    0L)).build();})
+                    .map(event ->
+                            event.toBuilder()
+                                    .confirmedRequests(eventCountRequest.getOrDefault(event.getId(), 0L))
+                                    .views(statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()),
+                                            0L)).build()
+                    )
                     .collect(Collectors.toMap(Event::getId, event -> event));
         }
 
@@ -239,7 +241,7 @@ public class EventServiceImp implements EventService {
         List<ViewStatsDto> listStats = statsClient.getStats(start, LocalDateTime.now(),
                 List.of(EVENT_URI_PATTERN.formatted(eventId)), true);
         if (!listStats.isEmpty())
-           return listStats.getFirst().getHits();
+            return listStats.getFirst().getHits();
 
         return 0L;
     }
