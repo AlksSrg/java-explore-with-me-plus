@@ -44,7 +44,7 @@ public class RequestServiceImpl implements RequestService {
         Event event = getEventById(eventId);
 
         // Проверка, что пользователь не является инициатором события
-        if (event.getInitiator().getId().equals(userId)) {
+        if (event.getInitiator().getId() == userId) {
             throw new ConflictResource("Инициатор события не может подать заявку на участие в своём событии");
         }
 
@@ -100,7 +100,7 @@ public class RequestServiceImpl implements RequestService {
 
     private Request getRequestByIdAndRequesterId(Long requestId, Long requesterId) {
         return requestRepository.findById(requestId)
-                .filter(request -> request.getRequester().getId().equals(requesterId))
+                .filter(request -> request.getRequester().getId() == requesterId)
                 .orElseThrow(() -> new NotFoundResource("Заявка с id=" + requestId + " не найдена"));
     }
 
