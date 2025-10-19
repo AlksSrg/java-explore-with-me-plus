@@ -6,6 +6,7 @@ import ru.practicum.category.model.Category;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.event.dto.UpdateEventAdminRequest;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.utill.State;
 import ru.practicum.user.dto.UserShortDto;
@@ -151,5 +152,47 @@ public class EventMapper {
                 .confirmedRequests(confirmedRequests != null ? confirmedRequests : 0L)
                 .views(views != null ? views : 0L)
                 .build();
+    }
+
+    public static Event updateEventFromAdminRequest(Event event, UpdateEventAdminRequest updateEvent) {
+        if (updateEvent.hasAnnotation())
+            event.setAnnotation(updateEvent.getAnnotation());
+
+        if (updateEvent.hasCategory())
+            event.setCategory(updateEvent.getCategoryObj());
+
+        if (updateEvent.hasDescription())
+            event.setDescription(updateEvent.getDescription());
+
+        if (updateEvent.hasEventDate())
+            event.setEventDate(updateEvent.getEventDate());
+
+        if (updateEvent.hasLocation())
+            event.setLocation(updateEvent.getLocation());
+
+        if (updateEvent.hasPaid())
+            event.setPaid(updateEvent.getPaid());
+
+        if (updateEvent.hasParticipantLimit())
+            event.setParticipantLimit(updateEvent.getParticipantLimit());
+
+        if (updateEvent.hasRequestModeration())
+            event.setRequestModeration(updateEvent.getRequestModeration());
+
+        if (updateEvent.hasStateAction()) {
+            switch (updateEvent.getStateAction()) {
+                case PUBLISH_EVENT:
+                    event.setState(State.PUBLISHED);
+                    event.setPublishedOn(LocalDateTime.now());
+                    break;
+                case REJECT_EVENT:
+                    event.setState(State.CANCELED);
+            }
+        }
+
+        if (updateEvent.hasTitle())
+            event.setTitle(updateEvent.getTitle());
+
+        return event;
     }
 }

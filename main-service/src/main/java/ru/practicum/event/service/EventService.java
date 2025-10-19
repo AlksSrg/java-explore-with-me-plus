@@ -1,7 +1,7 @@
 package ru.practicum.event.service;
 
 import ru.practicum.event.dto.*;
-import ru.practicum.event.utill.State;
+import ru.practicum.event.utill.EventGetAdminParam;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
@@ -22,8 +22,7 @@ public interface EventService {
                                                        EventRequestStatusUpdateRequest eventRequestStatus);
 
     // Методы для администратора
-    List<EventFullDto> getEventsByAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
+    List<EventFullDto> getEventsByAdmin(EventGetAdminParam param);
 
     EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
