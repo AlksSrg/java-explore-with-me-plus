@@ -1,9 +1,7 @@
 package ru.practicum.event.specification;
 
 import org.springframework.data.jpa.domain.Specification;
-import ru.practicum.category.model.Category;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.utill.State;
 
 import java.time.LocalDateTime;
 import java.util.List;
