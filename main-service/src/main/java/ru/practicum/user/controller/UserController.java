@@ -22,7 +22,7 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * Получает перечь пользователей.
+     * Получает перечень пользователей.
      *
      * @param ids  перечень id пользователей
      * @param from количество элементов, которые нужно пропустить для формирования текущего набора
