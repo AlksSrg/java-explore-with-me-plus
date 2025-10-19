@@ -11,15 +11,11 @@
 
     <artifactId>stats-dto</artifactId>
 
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-    </properties>
-
     <dependencies>
-        <dependency>
+    <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.validation</groupId>
