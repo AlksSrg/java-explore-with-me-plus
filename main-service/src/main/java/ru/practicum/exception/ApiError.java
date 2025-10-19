@@ -15,5 +15,5 @@ public class ApiError {
     private String status;
     private String reason;
     private String message;
-    private LocalDateTime timestamp;
+    private String timestamp;
 }

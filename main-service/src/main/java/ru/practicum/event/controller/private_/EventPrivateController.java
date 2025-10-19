@@ -20,7 +20,7 @@ import java.util.List;
 public class EventPrivateController {
     private final EventService eventService;
 
-    @GetMapping("{eventId}/requests")
+    @GetMapping("/{eventId}/requests")
     public List<ParticipationRequestDto> getRequests(@PathVariable @Positive long userId,
                                                      @PathVariable @Positive long eventId) {
         return eventService.getRequests(userId, eventId);
