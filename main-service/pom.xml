@@ -52,13 +52,8 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
         <!-- MapStruct dependencies -->
         <dependency>
             <groupId>org.mapstruct</groupId>
