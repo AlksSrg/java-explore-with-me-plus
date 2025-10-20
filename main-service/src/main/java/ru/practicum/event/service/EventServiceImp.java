@@ -4,6 +4,7 @@ import dto.ViewStatsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.utill.EventGetAdminParam;
+import ru.practicum.event.utill.EventGetPublicParam;
 import ru.practicum.event.utill.State;
 import ru.practicum.exception.ConflictResource;
 import ru.practicum.exception.NotFoundResource;
@@ -219,10 +221,6 @@ public class EventServiceImp implements EventService {
 
         List<Event> events = eventRepository.findAll(specification, pageable).stream().toList();
 
-//        return eventRepository.findAll(specification, pageable).stream()
-//                .map(EventMapper::mapToEventFullDto)
-//                .toList();
-
         return updateEventFieldStats(events).stream()
                 .map(EventMapper::mapToEventFullDto)
                 .toList();
@@ -245,17 +243,81 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getEventsByPublic(String text, List<Long> categories, Boolean paid,
-                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                 Boolean onlyAvailable, String sort, int from, int size) {
-        // TODO: Implement public events retrieval
-        return List.of();
+    public List<EventShortDto> getEventsByPublic(EventGetPublicParam param) {
+        Sort sort = null;
+        Pageable pageable = null;
+        Specification<Event> specification = Specification.where(null);
+
+        if (param.getText() != null && !param.getText().isBlank())
+            specification = specification.and(byText(param.getText()));
+
+        if (param.getCategories() != null)
+            specification = specification.and(byCategories(param.getCategories()));
+
+        if (param.getPaid() != null)
+            specification = specification.and(byPaid(param.getPaid()));
+
+        if (param.getRangeStart() != null)
+            specification = specification.and(byRangeStart(param.getRangeStart()));
+
+        if (param.getRangeEnd() != null)
+            specification = specification.and(byRangeEnd(param.getRangeEnd()));
+
+        if (param.getOnlyAvailable() != null && param.getOnlyAvailable())
+            specification = specification.and(byOnlyAvailable());
+
+        if (param.getSort() != null && !param.getSort().isBlank())
+            if (param.getSort().equals("EVENT_DATE"))
+                sort = Sort.by("eventDate");
+            else if (param.getSort().equals("VIEWS"))
+                sort = Sort.by(Sort.Direction.DESC, "views");
+
+        // только опубликованные
+        specification = specification.and(byStates(param.getStates()));
+
+        if (sort == null)
+            pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
+        else
+            pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize(), sort);
+
+        List<Event> events = eventRepository.findAll(specification, pageable).stream().toList();
+
+        Map<Long, Event> eventMap = events.stream()
+                .collect(Collectors.toMap(Event::getId, Function.identity()));
+
+        List<String> listUrl = eventMap.keySet().stream()
+                .map(EVENT_URI_PATTERN::formatted)
+                .collect(Collectors.toList());
+
+        Optional<LocalDateTime> start = eventMap.values().stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo);
+
+        Map<String, Long> statsCount = statsClient
+                .getStats(start.orElse(LocalDateTime.now().minusYears(1)), LocalDateTime.now(), listUrl, true)
+                .stream()
+                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+
+        return eventMap.values().stream()
+                .map(event -> {
+                    Long views = statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()), 0L);
+                    return EventMapper.mapToEventShortDto(event.toBuilder()
+                            .views(views)
+                            .build());
+                }).toList();
     }
 
     @Override
     public EventFullDto getEventByPublic(long eventId) {
-        // TODO: Implement public event retrieval
-        return null;
+        Optional<Event> optionalEvent = eventRepository.findById(eventId);
+        if (optionalEvent.isEmpty())
+              throw new NotFoundResource("Событие с id %d не найдено".formatted(eventId));
+        Event event = optionalEvent.get();
+        if (!event.getState().equals(State.PUBLISHED))
+            throw new NotFoundResource("Событие с id %d не опубликовано".formatted(eventId));
+
+        List<Event> eventList = List.of(event);
+        return  EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
     }
 
     // Вспомогательные методы
@@ -363,4 +425,5 @@ public class EventServiceImp implements EventService {
                             .build();
                 }).toList();
     }
+
 }

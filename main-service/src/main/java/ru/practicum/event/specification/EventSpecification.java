@@ -28,4 +28,21 @@ public class EventSpecification {
         return (root, cq, cb) ->
                 cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd);
     }
+
+    public static Specification<Event> byText(String text) {
+        String searchPattern = "%" + text.toLowerCase() + "%";
+        return (root, cq, cb) ->
+                cb.or(cb.like(cb.lower(root.get("annotation")), searchPattern),
+                        cb.like(cb.lower(root.get("description")), searchPattern));
+    }
+
+    public static Specification<Event> byPaid(boolean paid) {
+        return (root, cq, cb) ->
+                cb.equal(root.get("paid"), paid);
+    }
+
+    public static Specification<Event> byOnlyAvailable() {
+        return (root, cq, cb) ->
+                cb.greaterThanOrEqualTo(root.get("participantLimit"), 0);
+    }
 }

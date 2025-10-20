@@ -2,6 +2,7 @@ package ru.practicum.event.service;
 
 import ru.practicum.event.dto.*;
 import ru.practicum.event.utill.EventGetAdminParam;
+import ru.practicum.event.utill.EventGetPublicParam;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
@@ -27,9 +28,7 @@ public interface EventService {
     EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
     // Методы для публичного API
-    List<EventShortDto> getEventsByPublic(String text, List<Long> categories, Boolean paid,
-                                          LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                          Boolean onlyAvailable, String sort, int from, int size);
+    List<EventShortDto> getEventsByPublic(EventGetPublicParam param);
 
     EventFullDto getEventByPublic(long eventId);
 }
