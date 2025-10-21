@@ -6,7 +6,6 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.model.Location;
-import ru.practicum.event.validate.CustomFuture;
 import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
@@ -30,7 +29,7 @@ public class NewEventDto {
     private String description;
 
     @NotNull(message = "Дата и время должны быть заполнены")
-    @CustomFuture
+    //@CustomFuture
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 

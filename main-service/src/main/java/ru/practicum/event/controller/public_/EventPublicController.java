@@ -49,7 +49,7 @@ public class EventPublicController {
                 .categories(categories)
                 .paid(paid)
                 // если нет ограничений по дате начала, то позднее текущей
-                .rangeStart(rangeStart == null ? LocalDateTime.now() : rangeStart)
+                .rangeStart(rangeStart == null && rangeEnd == null ? LocalDateTime.now() : rangeStart)
                 .rangeEnd(rangeEnd)
                 .onlyAvailable(onlyAvailable)
                 .sort(sort)
