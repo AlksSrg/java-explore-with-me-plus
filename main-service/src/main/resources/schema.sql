@@ -39,3 +39,18 @@ CREATE TABLE IF NOT EXISTS requests(
     FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY(requester_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS compilations(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title VARCHAR(50) UNIQUE,
+    pinned boolean
+);
+
+CREATE TABLE IF NOT EXISTS compilation_events(
+    compilation_id BIGINT,
+    event_id BIGINT,
+    FOREIGN KEY(compilation_id) REFERENCES compilations(id) ON DELETE CASCADE,
+    FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE,
+    CONSTRAINT unique_keys_compilation_events UNIQUE(compilation_id, event_id)
+);
+

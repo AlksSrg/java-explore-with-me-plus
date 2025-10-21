@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -94,6 +95,18 @@ public class ErrorHandler {
         return ApiError.builder()
                 .message(ex.getMessage())
                 .reason("Некорректные параметры")
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        log.error(convertStackTraceToString(ex));
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Отсутствует параметр")
                 .status(HttpStatus.BAD_REQUEST.toString())
                 .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
                 .build();
