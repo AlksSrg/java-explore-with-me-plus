@@ -13,6 +13,10 @@ import ru.practicum.compilation.service.CompilationService;
 
 import java.util.List;
 
+/**
+ * Публичный контроллер для работы с подборками событий.
+ * Предоставляет API для получения информации о подборках событий.
+ */
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
@@ -22,21 +26,35 @@ public class CompilationPublicController {
 
     private final CompilationService compilationService;
 
+    /**
+     * Получает список подборок событий с возможностью фильтрации и пагинации.
+     *
+     * @param pinned фильтр по закрепленным подборкам (true - закрепленные, false - незакрепленные, null - все)
+     * @param from   начальная позиция в списке (по умолчанию 0)
+     * @param size   количество элементов на странице (по умолчанию 10)
+     * @return список подборок событий в формате DTO
+     */
     @GetMapping
     public List<CompilationDto> getCompilations(
             @RequestParam(required = false) Boolean pinned,
             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(defaultValue = "10") @Positive Integer size) {
 
-        log.info("Getting compilations with pinned={}, from={}, size={}", pinned, from, size);
+        log.info("Получение подборок с параметрами: pinned={}, from={}, size={}", pinned, from, size);
 
         Pageable pageable = PageRequest.of(from / size, size);
         return compilationService.getCompilations(pinned, pageable);
     }
 
+    /**
+     * Получает подборку событий по её идентификатору.
+     *
+     * @param compId идентификатор подборки
+     * @return подборка событий в формате DTO
+     */
     @GetMapping("/{compId}")
     public CompilationDto getCompilationById(@PathVariable Long compId) {
-        log.info("Getting compilation by id: {}", compId);
+        log.info("Получение подборки по идентификатору: {}", compId);
         return compilationService.getCompilationById(compId);
     }
 }
