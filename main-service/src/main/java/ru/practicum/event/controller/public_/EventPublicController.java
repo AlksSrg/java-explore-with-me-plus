@@ -58,12 +58,17 @@ public class EventPublicController {
                 .build();
 
         List<EventShortDto> events = eventService.getEventsByPublic(param);
+
+        // Отправка статистики после формирования ответа
         if (!events.isEmpty()) {
-            List<String> uriList = events.stream()
-                    .map(eventShortDto -> EVENT_URI_PATTERN.formatted(eventShortDto.getId()))
-                    .toList();
-            for (String uri : uriList)
-                statsClient.saveStat(APPLICATION, uri, request.getRemoteAddr());
+            new Thread(() -> {
+                List<String> uriList = events.stream()
+                        .map(eventShortDto -> EVENT_URI_PATTERN.formatted(eventShortDto.getId()))
+                        .toList();
+                for (String uri : uriList) {
+                    statsClient.saveStat(APPLICATION, uri, request.getRemoteAddr());
+                }
+            }).start();
         }
 
         return events;
@@ -74,6 +79,6 @@ public class EventPublicController {
                                  HttpServletRequest request) {
         EventFullDto eventFullDto = eventService.getEventByPublic(id);
         statsClient.saveStat(APPLICATION, request.getRequestURI(), request.getRemoteAddr());
-        return eventService.getEventByPublic(id);
+        return eventFullDto;
     }
 }
