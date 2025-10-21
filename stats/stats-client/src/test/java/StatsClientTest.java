@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.StatsClient;
-import ru.practicum.StatsClient;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

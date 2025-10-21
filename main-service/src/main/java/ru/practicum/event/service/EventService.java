@@ -5,7 +5,6 @@ import ru.practicum.event.utill.EventGetAdminParam;
 import ru.practicum.event.utill.EventGetPublicParam;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
