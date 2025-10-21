@@ -99,16 +99,17 @@ public class StatsClient {
             return List.of();
         }
 
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("start", start.format(DATE_TIME_FORMATTER));
-        uriVariables.put("end", end.format(DATE_TIME_FORMATTER));
-        uriVariables.put("unique", Boolean.toString(unique));
-        if (uris != null)
-            uriVariables.put("uris", uris.toString());
-
         try {
             return restClient.get()
-                    .uri("/stats", uriVariables)
+                    //.uri("/stats", uriVariables)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/stats")  // ✅ Относительный путь
+                            .queryParam("start", start.format(DATE_TIME_FORMATTER))
+                            .queryParam("end", end.format(DATE_TIME_FORMATTER))
+                            .queryParam("unique", unique)
+                            .queryParam("uris", uris != null ? uris.toArray() : new String[0])
+                            .build()
+                    )
                     .header("Content-Type", "application/json")
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {
