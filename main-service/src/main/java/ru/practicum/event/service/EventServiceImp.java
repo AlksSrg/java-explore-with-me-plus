@@ -17,6 +17,7 @@ import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.utill.EventGetAdminParam;
 import ru.practicum.event.utill.EventGetPublicParam;
 import ru.practicum.event.utill.State;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictResource;
 import ru.practicum.exception.NotFoundResource;
 import ru.practicum.request.dto.ParticipationRequestDto;
@@ -69,40 +70,6 @@ public class EventServiceImp implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable).stream().toList();
 
-//        Map<Long, Event> eventMap = eventRepository.findByInitiatorId(userId, pageable).stream()
-//                .collect(Collectors.toMap(Event::getId, Function.identity()));
-//
-//        if (!eventMap.isEmpty()) {
-//            Map<Long, Long> eventCountRequest = requestRepository.findAllByEventIdInAndStatus(eventMap.keySet(),
-//                            Status.CONFIRMED).stream()
-//                    .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
-//                            Collectors.counting()));
-//
-//            List<String> listUrl = eventMap.keySet().stream()
-//                    .map(EVENT_URI_PATTERN::formatted)
-//                    .collect(Collectors.toList());
-//
-//            Optional<LocalDateTime> start = eventMap.values().stream()
-//                    .map(Event::getCreatedOn)
-//                    .min(LocalDateTime::compareTo);
-//
-//            Map<String, Long> statsCount = statsClient
-//                    .getStats(start.orElse(LocalDateTime.now().minusYears(1)), LocalDateTime.now(), listUrl, true)
-//                    .stream()
-//                    .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
-//
-//            eventMap = eventMap.values().stream()
-//                    .map(event -> {
-//                        Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
-//                        Long views = statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()), 0L);
-//                        return event.toBuilder()
-//                                .confirmedRequests(confirmedRequests)
-//                                .views(views)
-//                                .build();
-//                    })
-//                    .collect(Collectors.toMap(Event::getId, Function.identity()));
-//        }
-
         return updateEventFieldStats(events).stream()
                 .map(EventMapper::mapToEventShortDto)
                 .toList();
@@ -111,6 +78,9 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public EventFullDto create(long userId, NewEventDto eventDto) {
+        if (!eventDto.getEventDate().isAfter(LocalDateTime.now().plusHours(2)))
+            throw new BadRequestException("Дата должна быть не ранее текущей + 2 часа");
+
         eventDto.setCategoryObject(categoryService.getCategoryById(eventDto.getCategory()));
         eventDto.setInitiatorObject(userService.getUserById(userId));
 
@@ -131,7 +101,7 @@ public class EventServiceImp implements EventService {
 
         if (updateEvent.getEventDate() != null &&
                 updateEvent.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictResource("Дата события должна быть не ранее чем через 2 часа от текущего момента");
+            throw new BadRequestException("Дата события должна быть не ранее чем через 2 часа от текущего момента");
         }
 
         updateEventFields(event, updateEvent);
@@ -230,7 +200,7 @@ public class EventServiceImp implements EventService {
     @Transactional
     public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundResource("Событие %d не найдено".formatted(eventId)));
+                () -> new NotFoundResource("Событие %d не найдено" .formatted(eventId)));
 
         checkUpdateEventAdmin(event, updateEventAdminRequest);
 
@@ -246,6 +216,11 @@ public class EventServiceImp implements EventService {
     public List<EventShortDto> getEventsByPublic(EventGetPublicParam param) {
         Sort sort = null;
         Pageable pageable = null;
+
+        if (param.getRangeStart() != null && param.getRangeEnd() != null
+                && param.getRangeEnd().isBefore(param.getRangeStart()))
+            throw new BadRequestException("Некорретный интервал дат");
+
         Specification<Event> specification = Specification.where(null);
 
         if (param.getText() != null && !param.getText().isBlank())
@@ -311,13 +286,13 @@ public class EventServiceImp implements EventService {
     public EventFullDto getEventByPublic(long eventId) {
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty())
-              throw new NotFoundResource("Событие с id %d не найдено".formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не найдено" .formatted(eventId));
         Event event = optionalEvent.get();
         if (!event.getState().equals(State.PUBLISHED))
-            throw new NotFoundResource("Событие с id %d не опубликовано".formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не опубликовано" .formatted(eventId));
 
         List<Event> eventList = List.of(event);
-        return  EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
+        return EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
     }
 
     // Вспомогательные методы
@@ -386,7 +361,7 @@ public class EventServiceImp implements EventService {
             eventDate = event.getEventDate();
 
         if (!eventDate.isAfter(LocalDateTime.now().minusHours(1)))
-            throw new ConflictResource(
+            throw new BadRequestException(
                     "Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
     }
 
