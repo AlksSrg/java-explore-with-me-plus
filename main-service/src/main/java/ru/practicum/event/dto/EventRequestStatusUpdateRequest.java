@@ -1,21 +1,19 @@
 package ru.practicum.event.dto;
 
+import lombok.*;
+import ru.practicum.request.utill.Status;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import ru.practicum.request.utill.Status;
-
+/**
+ * DTO для обновления статусов запросов на участие.
+ */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequestStatusUpdateRequest {
-	private List<Long> requestIds;
-	private Status status;
+    private List<Long> requestIds;
+    private Status status;
 }

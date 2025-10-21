@@ -5,6 +5,9 @@ import ru.practicum.event.dto.EventShortDto;
 
 import java.util.List;
 
+/**
+ * DTO для представления подборки событий.
+ */
 @Getter
 @Setter
 @Builder

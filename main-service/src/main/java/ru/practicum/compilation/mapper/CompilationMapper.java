@@ -8,9 +8,18 @@ import ru.practicum.event.mapper.EventMapper;
 
 import java.util.stream.Collectors;
 
+/**
+ * Маппер для преобразования между сущностями и DTO подборок событий.
+ */
 @UtilityClass
 public class CompilationMapper {
 
+    /**
+     * Преобразует сущность в DTO.
+     *
+     * @param compilation сущность подборки
+     * @return DTO подборки
+     */
     public static CompilationDto toDto(Compilation compilation) {
         if (compilation == null) {
             return null;
@@ -28,6 +37,12 @@ public class CompilationMapper {
                 .build();
     }
 
+    /**
+     * Преобразует DTO в сущность.
+     *
+     * @param newCompilationDto DTO для создания
+     * @return сущность подборки
+     */
     public static Compilation toEntity(NewCompilationDto newCompilationDto) {
         if (newCompilationDto == null) {
             return null;

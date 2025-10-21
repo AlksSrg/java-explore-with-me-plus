@@ -9,6 +9,9 @@ import ru.practicum.event.utill.StateActionUser;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO для обновления события пользователем.
+ */
 @Getter
 @Setter
 @Builder

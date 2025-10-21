@@ -37,6 +37,9 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.event.specification.EventSpecification.*;
 
+/**
+ * Реализация сервиса для работы с событиями.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -61,7 +64,6 @@ public class EventServiceImp implements EventService {
         Event event = getEventByIdAndInitiatorId(eventId, userId);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         Long views = getViewsForEvent(event.getCreatedOn(), eventId);
-
         return EventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
@@ -69,7 +71,6 @@ public class EventServiceImp implements EventService {
     public List<EventShortDto> getAll(long userId, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable).stream().toList();
-
         return updateEventFieldStats(events).stream()
                 .map(EventMapper::mapToEventShortDto)
                 .toList();
@@ -78,15 +79,15 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public EventFullDto create(long userId, NewEventDto eventDto) {
-        if (!eventDto.getEventDate().isAfter(LocalDateTime.now().plusHours(2)))
+        if (!eventDto.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
             throw new BadRequestException("Дата должна быть не ранее текущей + 2 часа");
+        }
 
         eventDto.setCategoryObject(categoryService.getCategoryById(eventDto.getCategory()));
         eventDto.setInitiatorObject(userService.getUserById(userId));
 
         Event event = EventMapper.mapFromNewEventDto(eventDto);
         Event savedEvent = eventRepository.save(event);
-
         return EventMapper.toEventFullDto(savedEvent, 0L, 0L);
     }
 
@@ -120,7 +121,6 @@ public class EventServiceImp implements EventService {
         Event updatedEvent = eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         Long views = getViewsForEvent(event.getCreatedOn(), eventId);
-
         return EventMapper.toEventFullDto(updatedEvent, confirmedRequests, views);
     }
 
@@ -190,7 +190,6 @@ public class EventServiceImp implements EventService {
             specification = specification.and(byRangeEnd(param.getRangeEnd()));
 
         List<Event> events = eventRepository.findAll(specification, pageable).stream().toList();
-
         return updateEventFieldStats(events).stream()
                 .map(EventMapper::mapToEventFullDto)
                 .toList();
@@ -199,14 +198,14 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundResource("Событие %d не найдено"
-                .formatted(eventId)));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundResource("Событие %d не найдено".formatted(eventId)));
 
         checkUpdateEventAdmin(event, updateEventAdminRequest);
 
-        if (updateEventAdminRequest.getCategory() != null)
-            updateEventAdminRequest.setCategoryObj(categoryService.getCategoryById(
-                    updateEventAdminRequest.getCategory()));
+        if (updateEventAdminRequest.getCategory() != null) {
+            updateEventAdminRequest.setCategoryObj(categoryService.getCategoryById(updateEventAdminRequest.getCategory()));
+        }
 
         EventMapper.updateEventFromAdminRequest(event, updateEventAdminRequest);
         return EventMapper.mapToEventFullDto(eventRepository.save(event));
@@ -218,8 +217,9 @@ public class EventServiceImp implements EventService {
         Pageable pageable = null;
 
         if (param.getRangeStart() != null && param.getRangeEnd() != null
-                && param.getRangeEnd().isBefore(param.getRangeStart()))
-            throw new BadRequestException("Некорретный интервал дат");
+                && param.getRangeEnd().isBefore(param.getRangeStart())) {
+            throw new BadRequestException("Некорректный интервал дат");
+        }
 
         Specification<Event> specification = Specification.where(null);
 
@@ -241,13 +241,13 @@ public class EventServiceImp implements EventService {
         if (param.getOnlyAvailable() != null && param.getOnlyAvailable())
             specification = specification.and(byOnlyAvailable());
 
-        if (param.getSort() != null && !param.getSort().isBlank())
+        if (param.getSort() != null && !param.getSort().isBlank()) {
             if (param.getSort().equals("EVENT_DATE"))
                 sort = Sort.by("eventDate");
             else if (param.getSort().equals("VIEWS"))
                 sort = Sort.by(Sort.Direction.DESC, "views");
+        }
 
-        // только опубликованные
         specification = specification.and(byStates(param.getStates()));
 
         if (sort == null)
@@ -292,7 +292,6 @@ public class EventServiceImp implements EventService {
         if (!event.getState().equals(State.PUBLISHED))
             throw new NotFoundResource("Событие с id %d не опубликовано ".formatted(eventId));
 
-        // Увеличиваем счетчик просмотров
         event.setViews(event.getViews() + 1);
         Event updatedEvent = eventRepository.save(event);
 
@@ -300,7 +299,6 @@ public class EventServiceImp implements EventService {
         return EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
     }
 
-    // Вспомогательные методы
     private Event getEventByIdAndInitiatorId(long eventId, long userId) {
         return eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundResource("Событие с id=" + eventId + " не найдено"));
@@ -348,7 +346,7 @@ public class EventServiceImp implements EventService {
     private void checkUpdateEventAdmin(Event event, UpdateEventAdminRequest updateEvent) {
         LocalDateTime eventDate;
 
-        if (updateEvent.hasStateAction())
+        if (updateEvent.hasStateAction()) {
             switch (updateEvent.getStateAction()) {
                 case PUBLISH_EVENT:
                     if (!event.getState().equals(State.PENDING))
@@ -359,6 +357,7 @@ public class EventServiceImp implements EventService {
                         throw new ConflictResource("Событие можно отклонить, только если оно еще не опубликовано");
                     break;
             }
+        }
 
         if (updateEvent.hasEventDate())
             eventDate = updateEvent.getEventDate();
@@ -390,5 +389,4 @@ public class EventServiceImp implements EventService {
                             .build();
                 }).toList();
     }
-
 }

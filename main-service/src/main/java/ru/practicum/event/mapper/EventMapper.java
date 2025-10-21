@@ -15,10 +15,19 @@ import ru.practicum.user.model.User;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Маппер для преобразования между сущностями и DTO событий.
+ */
 @UtilityClass
 public class EventMapper {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * Преобразует DTO в сущность события.
+     *
+     * @param newEventDto DTO для создания
+     * @return сущность события
+     */
     public static Event mapFromNewEventDto(NewEventDto newEventDto) {
         if (newEventDto == null) {
             return null;
@@ -43,6 +52,12 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Преобразует сущность в DTO полного события.
+     *
+     * @param event сущность события
+     * @return DTO события
+     */
     public static EventFullDto mapToEventFullDto(Event event) {
         if (event == null) {
             return null;
@@ -68,6 +83,12 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Преобразует сущность в DTO краткого события.
+     *
+     * @param event сущность события
+     * @return DTO краткого события
+     */
     public static EventShortDto mapToEventShortDto(Event event) {
         if (event == null) {
             return null;
@@ -86,6 +107,12 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Преобразует сущность категории в DTO.
+     *
+     * @param category сущность категории
+     * @return DTO категории
+     */
     public static CategoryDto toCategoryDto(Category category) {
         if (category == null) {
             return null;
@@ -96,6 +123,12 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Преобразует сущность пользователя в DTO.
+     *
+     * @param user сущность пользователя
+     * @return DTO пользователя
+     */
     public static UserShortDto toUserShortDto(User user) {
         if (user == null) {
             return null;
@@ -110,7 +143,14 @@ public class EventMapper {
         return dateTime != null ? dateTime.format(FORMATTER) : null;
     }
 
-    // Дополнительные методы для работы с внешними confirmedRequests и views
+    /**
+     * Преобразует сущность в DTO с внешними счетчиками.
+     *
+     * @param event             сущность события
+     * @param confirmedRequests количество подтвержденных запросов
+     * @param views             количество просмотров
+     * @return DTO события
+     */
     public static EventFullDto toEventFullDto(Event event, Long confirmedRequests, Long views) {
         if (event == null) {
             return null;
@@ -136,6 +176,14 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Преобразует сущность в DTO краткого события с внешними счетчиками.
+     *
+     * @param event             сущность события
+     * @param confirmedRequests количество подтвержденных запросов
+     * @param views             количество просмотров
+     * @return DTO краткого события
+     */
     public static EventShortDto toEventShortDto(Event event, Long confirmedRequests, Long views) {
         if (event == null) {
             return null;
@@ -154,6 +202,13 @@ public class EventMapper {
                 .build();
     }
 
+    /**
+     * Обновляет сущность события из запроса администратора.
+     *
+     * @param event       сущность события
+     * @param updateEvent запрос на обновление
+     * @return обновленная сущность
+     */
     public static Event updateEventFromAdminRequest(Event event, UpdateEventAdminRequest updateEvent) {
         if (updateEvent.hasAnnotation())
             event.setAnnotation(updateEvent.getAnnotation());

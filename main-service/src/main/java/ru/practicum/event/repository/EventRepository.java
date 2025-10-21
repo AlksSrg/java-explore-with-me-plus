@@ -10,6 +10,9 @@ import ru.practicum.event.model.Event;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Репозиторий для работы с событиями.
+ */
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
@@ -20,5 +23,4 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<Event> findByIdIn(List<Long> eventIds);
 
     boolean existsByCategoryId(Long categoryId);
-
 }

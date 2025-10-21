@@ -1,16 +1,13 @@
 package ru.practicum.category.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 import ru.practicum.category.model.Category;
 
+/**
+ * DTO для создания новой категории.
+ */
 @Getter
 @Setter
 @Builder
@@ -18,11 +15,15 @@ import ru.practicum.category.model.Category;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCategoryDto {
-    @Length(min = 1, message = "Длина названия категории не должна быть меньше 1 символа")
-    @Length(max = 50, message = "Длина названия категории не должна быть больше 50 символов")
+    @Length(min = 1, max = 50)
     @NotBlank
     private String name;
 
+    /**
+     * Преобразует DTO в сущность категории.
+     *
+     * @return сущность категории
+     */
     public Category mapToCategory() {
         return Category.builder()
                 .name(this.name)

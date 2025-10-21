@@ -3,6 +3,9 @@ package ru.practicum.event.model;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
+/**
+ * Сущность местоположения.
+ */
 @Getter
 @Setter
 @Builder

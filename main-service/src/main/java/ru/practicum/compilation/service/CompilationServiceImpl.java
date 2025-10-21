@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация сервиса для работы с подборками событий.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
@@ -36,14 +39,12 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         log.info("Creating new compilation with title: {}", newCompilationDto.getTitle());
 
-        // Проверка на уникальность названия
         if (compilationRepository.existsByTitle(newCompilationDto.getTitle())) {
             throw new ConflictResource("Compilation with title '" + newCompilationDto.getTitle() + "' already exists");
         }
 
         Compilation compilation = CompilationMapper.toEntity(newCompilationDto);
 
-        // Добавляем события если они указаны
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
             List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
             compilation.setEvents(new HashSet<>(events));
@@ -80,7 +81,6 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundResource("Compilation with id=" + compId + " was not found"));
 
-        // Обновление title если указано
         if (updateRequest.getTitle() != null && !updateRequest.getTitle().isBlank()) {
             if (!compilation.getTitle().equals(updateRequest.getTitle()) &&
                     compilationRepository.existsByTitle(updateRequest.getTitle())) {
@@ -89,12 +89,10 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(updateRequest.getTitle());
         }
 
-        // Обновление pinned если указано
         if (updateRequest.getPinned() != null) {
             compilation.setPinned(updateRequest.getPinned());
         }
 
-        // Обновление событий если указано
         if (updateRequest.getEvents() != null) {
             Set<Event> events = new HashSet<>(eventRepository.findAllById(updateRequest.getEvents()));
             compilation.setEvents(events);
@@ -110,7 +108,6 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<CompilationDto> getCompilations(Boolean pinned, Pageable pageable) {
         log.info("Getting compilations with pinned={}, pageable={}", pinned, pageable);
 
@@ -127,7 +124,6 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CompilationDto getCompilationById(Long compId) {
         log.info("Getting compilation by id: {}", compId);
 

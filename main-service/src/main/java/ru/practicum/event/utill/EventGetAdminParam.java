@@ -7,6 +7,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Параметры для получения событий администратором.
+ */
 @Builder
 @Getter
 @Setter

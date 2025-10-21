@@ -9,6 +9,9 @@ import ru.practicum.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Сущность события.
+ */
 @Builder(toBuilder = true)
 @Table(name = "events")
 @Entity

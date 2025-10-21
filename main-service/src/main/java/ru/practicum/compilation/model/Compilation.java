@@ -6,6 +6,9 @@ import ru.practicum.event.model.Event;
 
 import java.util.Set;
 
+/**
+ * Сущность подборки событий.
+ */
 @Builder(toBuilder = true)
 @Table(name = "compilations")
 @Entity

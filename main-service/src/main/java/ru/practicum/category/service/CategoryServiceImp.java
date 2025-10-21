@@ -15,20 +15,16 @@ import ru.practicum.exception.NotFoundResource;
 
 import java.util.List;
 
+/**
+ * Реализация сервиса для работы с категориями.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryServiceImp implements CategoryService {
     private final CategoryRepository categoryRepository;
-    private final EventRepository eventRepository; // Добавляем для проверки связанных событий
+    private final EventRepository eventRepository;
 
-    /**
-     * Получение категорий.
-     *
-     * @param from количество категорий, которые нужно пропустить для формирования текущего набора
-     * @param size количество категорий в наборе
-     * @return список категорий
-     */
     @Override
     public List<CategoryDto> getAll(int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size);
@@ -37,40 +33,21 @@ public class CategoryServiceImp implements CategoryService {
                 .toList();
     }
 
-    /**
-     * Получение информации о категории.
-     *
-     * @param catId id категории
-     * @return данные категории
-     */
     @Override
     public CategoryDto get(long catId) {
         Category category = getCategoryById(catId);
         return CategoryDto.mapFromCategory(category);
     }
 
-    /**
-     * Получение сущности категории по ID.
-     *
-     * @param catId id категории
-     * @return сущность категории
-     */
     @Override
     public Category getCategoryById(long catId) {
         return categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundResource("Категория с id=" + catId + " не найдена"));
     }
 
-    /**
-     * Создание категории.
-     *
-     * @param categoryDto данные категории
-     * @return созданная категория
-     */
     @Override
     @Transactional
     public CategoryDto create(NewCategoryDto categoryDto) {
-        // Проверка на уникальность имени категории
         categoryRepository.findByNameContainingIgnoreCase(categoryDto.getName())
                 .ifPresent(category -> {
                     throw new ConflictResource("Категория '" + categoryDto.getName() + "' уже существует");
@@ -82,19 +59,11 @@ public class CategoryServiceImp implements CategoryService {
         return CategoryDto.mapFromCategory(savedCategory);
     }
 
-    /**
-     * Изменение категории.
-     *
-     * @param categoryDto данные категории
-     * @return измененная категория
-     */
     @Override
     @Transactional
     public CategoryDto update(CategoryDto categoryDto) {
-        // Проверка существования категории
         Category existingCategory = getCategoryById(categoryDto.getId());
 
-        // Проверка на уникальность имени (исключая текущую категорию)
         categoryRepository.findByNameContainingIgnoreCaseAndIdNotIn(categoryDto.getName(),
                         List.of(categoryDto.getId()))
                 .ifPresent(category -> {
@@ -107,18 +76,11 @@ public class CategoryServiceImp implements CategoryService {
         return CategoryDto.mapFromCategory(updatedCategory);
     }
 
-    /**
-     * Удаление категории.
-     *
-     * @param catId id категории
-     */
     @Override
     @Transactional
     public void delete(long catId) {
-        // Проверка существования категории
         Category category = getCategoryById(catId);
 
-        // Проверка: существуют ли события, связанные с категорией
         boolean hasEvents = eventRepository.existsByCategoryId(catId);
         if (hasEvents) {
             throw new ConflictResource("Нельзя удалить категорию: существуют события, связанные с этой категорией");

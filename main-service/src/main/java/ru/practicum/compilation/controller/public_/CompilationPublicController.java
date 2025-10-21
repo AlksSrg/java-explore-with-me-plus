@@ -15,7 +15,6 @@ import java.util.List;
 
 /**
  * Публичный контроллер для работы с подборками событий.
- * Предоставляет API для получения информации о подборках событий.
  */
 @RestController
 @RequestMapping("/compilations")
@@ -29,10 +28,10 @@ public class CompilationPublicController {
     /**
      * Получает список подборок событий с возможностью фильтрации и пагинации.
      *
-     * @param pinned фильтр по закрепленным подборкам (true - закрепленные, false - незакрепленные, null - все)
-     * @param from   начальная позиция в списке (по умолчанию 0)
-     * @param size   количество элементов на странице (по умолчанию 10)
-     * @return список подборок событий в формате DTO
+     * @param pinned фильтр по закрепленным подборкам
+     * @param from   начальная позиция в списке
+     * @param size   количество элементов на странице
+     * @return список подборок событий
      */
     @GetMapping
     public List<CompilationDto> getCompilations(
@@ -40,21 +39,21 @@ public class CompilationPublicController {
             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(defaultValue = "10") @Positive Integer size) {
 
-        log.info("Получение подборок с параметрами: pinned={}, from={}, size={}", pinned, from, size);
+        log.info("Getting compilations with parameters: pinned={}, from={}, size={}", pinned, from, size);
 
         Pageable pageable = PageRequest.of(from / size, size);
         return compilationService.getCompilations(pinned, pageable);
     }
 
     /**
-     * Получает подборку событий по её идентификатору.
+     * Получает подборку событий по идентификатору.
      *
      * @param compId идентификатор подборки
-     * @return подборка событий в формате DTO
+     * @return подборка событий
      */
     @GetMapping("/{compId}")
     public CompilationDto getCompilationById(@PathVariable Long compId) {
-        log.info("Получение подборки по идентификатору: {}", compId);
+        log.info("Getting compilation by id: {}", compId);
         return compilationService.getCompilationById(compId);
     }
 }

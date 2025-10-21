@@ -12,6 +12,9 @@ import ru.practicum.event.utill.StateActionAdmin;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO для обновления события администратором.
+ */
 @Getter
 @Setter
 @Builder

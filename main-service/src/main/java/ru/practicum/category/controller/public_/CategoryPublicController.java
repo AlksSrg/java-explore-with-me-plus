@@ -10,6 +10,9 @@ import ru.practicum.category.service.CategoryService;
 
 import java.util.List;
 
+/**
+ * Публичный контроллер для операций с категориями.
+ */
 @Validated
 @RestController
 @RequestMapping("/categories")
@@ -18,26 +21,26 @@ public class CategoryPublicController {
     private final CategoryService categoryService;
 
     /**
-     * Получение категорий.
+     * Возвращает список категорий с пагинацией.
      *
-     * @param from количество категорий, которые нужно пропустить для формирования текущего набора
-     * @param size количество категорий в наборе
+     * @param from начальная позиция в списке
+     * @param size количество элементов на странице
      * @return список категорий
      */
     @GetMapping
     public List<CategoryDto> getAll(@RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                     @RequestParam(defaultValue = "10") @Positive int size) {
-       return categoryService.getAll(from, size);
+        return categoryService.getAll(from, size);
     }
 
     /**
-     * Получение информации о категории.
+     * Возвращает категорию по идентификатору.
      *
-     * @param catId id категории
+     * @param catId идентификатор категории
      * @return данные категории
      */
     @GetMapping("/{catId}")
     public CategoryDto get(@PathVariable @Positive long catId) {
-       return categoryService.get(catId);
+        return categoryService.get(catId);
     }
 }

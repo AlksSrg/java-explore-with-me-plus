@@ -15,7 +15,12 @@ import ru.practicum.event.utill.EventGetPublicParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+/**
+ * Публичный контроллер для операций с событиями.
+ */
 @Validated
 @RequestMapping("/events")
 @RestController
@@ -26,18 +31,32 @@ public class EventPublicController {
     private static final String EVENT_URI_PATTERN = "/events/%d";
     private final EventService eventService;
     private final StatsClient statsClient;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+    /**
+     * Получает список событий с фильтрацией для публичного доступа.
+     *
+     * @param text          текст для поиска в аннотации и описании
+     * @param categories    список идентификаторов категорий
+     * @param paid          фильтр по платности события
+     * @param rangeStart    начало временного интервала
+     * @param rangeEnd      конец временного интервала
+     * @param onlyAvailable только события с доступными местами
+     * @param sort          способ сортировки
+     * @param from          начальная позиция
+     * @param size          количество элементов
+     * @param request       HTTP запрос
+     * @return список событий
+     */
     @GetMapping
     public List<EventShortDto> getEvents(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
             @RequestParam(required = false)
-            @DateTimeFormat(pattern =
-                    DATE_TIME_FORMAT) LocalDateTime rangeStart,
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
             @RequestParam(required = false)
-            @DateTimeFormat(pattern =
-                    DATE_TIME_FORMAT) LocalDateTime rangeEnd,
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "false") Boolean onlyAvailable,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") @PositiveOrZero int from,
@@ -48,7 +67,6 @@ public class EventPublicController {
                 .text(text)
                 .categories(categories)
                 .paid(paid)
-                // если нет ограничений по дате начала, то позднее текущей
                 .rangeStart(rangeStart == null && rangeEnd == null ? LocalDateTime.now() : rangeStart)
                 .rangeEnd(rangeEnd)
                 .onlyAvailable(onlyAvailable)
@@ -59,26 +77,33 @@ public class EventPublicController {
 
         List<EventShortDto> events = eventService.getEventsByPublic(param);
 
-        // Отправка статистики после формирования ответа
         if (!events.isEmpty()) {
-            new Thread(() -> {
+            executorService.execute(() -> {
                 List<String> uriList = events.stream()
                         .map(eventShortDto -> EVENT_URI_PATTERN.formatted(eventShortDto.getId()))
                         .toList();
                 for (String uri : uriList) {
                     statsClient.saveStat(APPLICATION, uri, request.getRemoteAddr());
                 }
-            }).start();
+            });
         }
 
         return events;
     }
 
+    /**
+     * Получает событие по идентификатору для публичного доступа.
+     *
+     * @param id      идентификатор события
+     * @param request HTTP запрос
+     * @return событие
+     */
     @GetMapping("/{id}")
     public EventFullDto getEvent(@PathVariable @Positive long id,
                                  HttpServletRequest request) {
         EventFullDto eventFullDto = eventService.getEventByPublic(id);
-        statsClient.saveStat(APPLICATION, request.getRequestURI(), request.getRemoteAddr());
+        executorService.execute(() ->
+                statsClient.saveStat(APPLICATION, request.getRequestURI(), request.getRemoteAddr()));
         return eventFullDto;
     }
 }

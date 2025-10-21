@@ -10,6 +10,9 @@ import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO для создания нового события.
+ */
 @Builder
 @Getter
 @Setter
