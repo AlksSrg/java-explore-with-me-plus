@@ -199,8 +199,8 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        Event event = eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundResource("Событие %d не найдено" .formatted(eventId)));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundResource("Событие %d не найдено"
+                .formatted(eventId)));
 
         checkUpdateEventAdmin(event, updateEventAdminRequest);
 
@@ -286,10 +286,10 @@ public class EventServiceImp implements EventService {
     public EventFullDto getEventByPublic(long eventId) {
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty())
-            throw new NotFoundResource("Событие с id %d не найдено" .formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не найдено ".formatted(eventId));
         Event event = optionalEvent.get();
         if (!event.getState().equals(State.PUBLISHED))
-            throw new NotFoundResource("Событие с id %d не опубликовано" .formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не опубликовано ".formatted(eventId));
 
         List<Event> eventList = List.of(event);
         return EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
