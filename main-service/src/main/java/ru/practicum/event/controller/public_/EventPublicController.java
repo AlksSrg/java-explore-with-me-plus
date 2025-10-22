@@ -76,18 +76,7 @@ public class EventPublicController {
                 .build();
 
         List<EventShortDto> events = eventService.getEventsByPublic(param);
-
-        if (!events.isEmpty()) {
-            executorService.execute(() -> {
-                List<String> uriList = events.stream()
-                        .map(eventShortDto -> EVENT_URI_PATTERN.formatted(eventShortDto.getId()))
-                        .toList();
-                for (String uri : uriList) {
-                    statsClient.saveStat(APPLICATION, uri, request.getRemoteAddr());
-                }
-            });
-        }
-
+        statsClient.saveStat(APPLICATION, request.getRequestURI(), request.getRemoteAddr());
         return events;
     }
 
