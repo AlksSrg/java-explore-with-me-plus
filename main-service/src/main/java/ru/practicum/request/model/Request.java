@@ -9,6 +9,9 @@ import ru.practicum.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Сущность заявки на участие в событии.
+ */
 @Builder
 @Table(name = "requests")
 @Entity

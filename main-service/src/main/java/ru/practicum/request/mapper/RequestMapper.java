@@ -1,14 +1,24 @@
 package ru.practicum.request.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.model.Request;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Маппер для преобразования между сущностями и DTO заявок.
+ */
+@UtilityClass
 public class RequestMapper {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * Преобразует сущность в DTO.
+     *
+     * @param request сущность заявки
+     * @return DTO заявки
+     */
     public static ParticipationRequestDto mapToParticipationRequestDto(Request request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
@@ -17,15 +27,5 @@ public class RequestMapper {
                 .requester(request.getRequester().getId())
                 .status(request.getStatus())
                 .build();
-    }
-
-    public static Request mapToRequest(ParticipationRequestDto participationRequestDto) {
-        return Request.builder()
-                .id(participationRequestDto.getId())
-                .created(participationRequestDto.getCreated() != null ?
-                        LocalDateTime.parse(participationRequestDto.getCreated(), FORMATTER) :
-                        LocalDateTime.now())
-                .build();
-        // Note: event and requester should be set separately as they are entities
     }
 }

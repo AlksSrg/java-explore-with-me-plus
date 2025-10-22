@@ -1,13 +1,11 @@
 package ru.practicum.request.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.request.utill.Status;
 
+/**
+ * DTO для представления заявки на участие в событии.
+ */
 @Getter
 @Setter
 @Builder

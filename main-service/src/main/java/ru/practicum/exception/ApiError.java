@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO для представления ошибок API.
+ */
 @Getter
 @Setter
 @Builder

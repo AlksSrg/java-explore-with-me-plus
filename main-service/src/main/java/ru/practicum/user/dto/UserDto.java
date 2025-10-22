@@ -7,14 +7,33 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO для представления данных пользователя.
+ * <p>
+ * Используется для возврата данных о пользователе в API.
+ */
 @Builder
 @Setter
 @Getter
 public class UserDto {
+
+    /**
+     * Уникальный идентификатор пользователя.
+     * <p>
+     * Только для чтения.
+     */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
-    @Email(message = "Некорректный email")
+
+    /**
+     * Email пользователя.
+     */
+    @Email(message = "Некорректный формат email")
     private String email;
-    @NotBlank
+
+    /**
+     * Имя пользователя.
+     */
+    @NotBlank(message = "Имя не может быть пустым")
     private String name;
 }
