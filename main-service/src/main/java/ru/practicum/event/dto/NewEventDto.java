@@ -32,7 +32,6 @@ public class NewEventDto {
     private String description;
 
     @NotNull(message = "Дата и время должны быть заполнены")
-    //@CustomFuture
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 

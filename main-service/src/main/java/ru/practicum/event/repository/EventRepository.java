@@ -15,7 +15,7 @@ import java.util.Optional;
  * <p>
  * Предоставляет методы для выполнения операций с событиями, включая поиск по инициатору,
  * <p>
- * проверку существования категории и поиск по списку идентификаторов.
+ * Проверку существования категории и поиск по списку идентификаторов.
  */
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
