@@ -1,6 +1,7 @@
 package ru.practicum.event.service;
 
 import ru.practicum.event.dto.*;
+import ru.practicum.event.model.Event;
 import ru.practicum.event.utill.EventGetAdminParam;
 import ru.practicum.event.utill.EventGetPublicParam;
 import ru.practicum.request.dto.ParticipationRequestDto;
@@ -102,4 +103,12 @@ public interface EventService {
      * @return событие
      */
     EventFullDto getEventByPublic(long eventId);
+
+    /**
+     * Получает событие.
+     *
+     * @param eventId идентификатор события
+     * @return событие
+     */
+    Event getEventById(long eventId);
 }

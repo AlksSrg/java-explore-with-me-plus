@@ -296,6 +296,12 @@ public class EventServiceImp implements EventService {
         return EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
     }
 
+    @Override
+    public Event getEventById(long eventId) {
+        return eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundResource("Событие %d не найдено".formatted(eventId)));
+    }
+
     private Event getEventByIdAndInitiatorId(long eventId, long userId) {
         return eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundResource("Событие с id=" + eventId + " не найдено"));
