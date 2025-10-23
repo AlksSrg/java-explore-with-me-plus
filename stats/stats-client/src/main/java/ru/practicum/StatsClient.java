@@ -97,21 +97,27 @@ public class StatsClient {
             return List.of();
         }
 
+        log.info("Запрашиваем статистику : start - %s, end - %s, uris - %s, unique - %b"
+                .formatted(start.format(DATE_TIME_FORMATTER), end.format(DATE_TIME_FORMATTER), uris, unique));
+
         try {
-            return restClient.get()
+            List<ViewStatsDto> views = restClient.get()
                     //.uri("/stats", uriVariables)
                     .uri(uriBuilder -> uriBuilder
-                            .path("/stats")  // ✅ Относительный путь
+                            .path("/stats")  //
                             .queryParam("start", start.format(DATE_TIME_FORMATTER))
                             .queryParam("end", end.format(DATE_TIME_FORMATTER))
                             .queryParam("unique", unique)
-                            .queryParam("uris", uris != null ? uris.toArray() : new String[0])
+                            .queryParam("uris", uris != null ? String.join(",", uris) : "")
                             .build()
                     )
                     .header("Content-Type", "application/json")
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {
+                    .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
                     });
+
+            log.info("Результат - %s".formatted(views.toString()));
+            return views;
         } catch (ResourceAccessException ex) {
             log.error("Сервер не доступен");
             return List.of();

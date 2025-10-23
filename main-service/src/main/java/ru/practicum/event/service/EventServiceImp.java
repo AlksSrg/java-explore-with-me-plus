@@ -287,15 +287,12 @@ public class EventServiceImp implements EventService {
     public EventFullDto getEventByPublic(long eventId) {
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty())
-            throw new NotFoundResource("Событие с id %d не найдено ".formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не найдено".formatted(eventId));
         Event event = optionalEvent.get();
         if (!event.getState().equals(State.PUBLISHED))
-            throw new NotFoundResource("Событие с id %d не опубликовано ".formatted(eventId));
+            throw new NotFoundResource("Событие с id %d не опубликовано".formatted(eventId));
 
-        event.setViews(event.getViews() + 1);
-        Event updatedEvent = eventRepository.save(event);
-
-        List<Event> eventList = List.of(updatedEvent);
+        List<Event> eventList = List.of(event);
         return EventMapper.mapToEventFullDto(updateEventFieldStats(eventList).getFirst());
     }
 
@@ -381,12 +378,28 @@ public class EventServiceImp implements EventService {
                 .collect(Collectors.groupingBy(request -> request.getEvent().getId(),
                         Collectors.counting()));
 
+        List<String> listUrl = eventMap.keySet().stream()
+                .map(EVENT_URI_PATTERN::formatted)
+                .collect(Collectors.toList());
+
+        Optional<LocalDateTime> start = eventMap.values().stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo);
+
+        Map<String, Long> statsCount = statsClient
+                .getStats(start.orElse(LocalDateTime.now().minusYears(1)), LocalDateTime.now().plusMinutes(1), listUrl, true)
+                .stream()
+                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+
         return eventMap.values().stream()
                 .map(event -> {
                     Long confirmedRequests = eventCountRequest.getOrDefault(event.getId(), 0L);
+                    Long views = statsCount.getOrDefault(EVENT_URI_PATTERN.formatted(event.getId()), 0L);
                     return event.toBuilder()
                             .confirmedRequests(confirmedRequests)
+                            .views(views)
                             .build();
                 }).toList();
     }
+
 }
