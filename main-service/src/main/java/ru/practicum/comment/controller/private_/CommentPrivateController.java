@@ -3,6 +3,7 @@ package ru.practicum.comment.controller.private_;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentDto;
@@ -14,7 +15,6 @@ import java.util.List;
 
 @Validated
 @RestController
-//@RequestMapping("users/{userId}/events/{eventId}/comments")
 @RequestMapping("users/{userId}/comments")
 @RequiredArgsConstructor
 public class CommentPrivateController {
@@ -32,6 +32,7 @@ public class CommentPrivateController {
     }
 
     @PostMapping("/events/{eventId}")
+    @ResponseStatus(HttpStatus.CREATED)
     public CommentDto create(@PathVariable @Positive long userId,
                              @PathVariable @Positive long eventId,
                              @RequestBody @Valid NewCommentDto comment) {
@@ -50,6 +51,7 @@ public class CommentPrivateController {
     }
 
     @DeleteMapping("/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable @Positive long userId,
                        @PathVariable @Positive long commentId) {
         commentService.delete(userId, commentId);

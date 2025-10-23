@@ -3,6 +3,7 @@ package ru.practicum.comment.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.event.model.Event;
+import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,6 @@ public class Comment {
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)

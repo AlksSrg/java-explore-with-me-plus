@@ -66,17 +66,18 @@ public class CommentServiceImp implements CommentService{
             throw new ConflictResource("Комментировать можно только опубликованное событие");
 
         comment.setAuthorObj(userService.getUserById(comment.getAuthor()));
-
         return CommentMapper.mapFromComment(commentRepository.save(CommentMapper.mapFromNewDto(comment)));
     }
 
     @Override
+    @Transactional
     public CommentDto update(UpdateCommentDto comment) {
         // TODO : реализовать
         return null;
     }
 
     @Override
+    @Transactional
     public void delete(long userId, long commentId) {
         // проверка
         userService.getUserById(userId);

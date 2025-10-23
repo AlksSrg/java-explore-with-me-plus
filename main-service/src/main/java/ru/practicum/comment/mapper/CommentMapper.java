@@ -4,6 +4,8 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.dto.NewCommentDto;
 import ru.practicum.comment.model.Comment;
+import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.user.mapper.UserMapper;
 
 @UtilityClass
 public class CommentMapper {
@@ -19,8 +21,8 @@ public class CommentMapper {
     public static CommentDto mapFromComment(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
-                .author(comment.getAuthor())
-                .event(comment.getEvent())
+                .author(UserMapper.mapToDto(comment.getAuthor()))
+                .event(EventMapper.mapToEventShortDto(comment.getEvent()))
                 .created(comment.getCreated())
                 .text(comment.getText())
                 .build();

@@ -22,7 +22,7 @@ public class NewCommentDto {
     private long event;
 
     @NotBlank
-    @Size(min = 20, max = 5000)
+    @Size(min = 3, max = 5000)
     private String text;
 
     @JsonIgnore

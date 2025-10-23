@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS comments(
     author_id BIGINT,
     event_id BIGINT,
     created timestamp,
-    text VARCHAR(5000)
+    text VARCHAR(5000),
     FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE,
     CONSTRAINT unique_keys_author_event UNIQUE(author_id, event_id)
