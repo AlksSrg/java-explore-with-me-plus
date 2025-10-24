@@ -1,5 +1,6 @@
 package ru.practicum.event.specification;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.event.model.Event;
 
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * Спецификации для фильтрации событий.
  */
+@UtilityClass
 public class EventSpecification {
 
     public static Specification<Event> byUser(List<Long> users) {

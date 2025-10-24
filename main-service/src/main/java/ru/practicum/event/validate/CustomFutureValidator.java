@@ -17,9 +17,6 @@ public class CustomFutureValidator implements ConstraintValidator<CustomFuture, 
 
     @Override
     public boolean isValid(LocalDateTime localDateTime, ConstraintValidatorContext constraintValidatorContext) {
-        if (localDateTime == null) {
-            return true;
-        }
-        return localDateTime.isAfter(LocalDateTime.now().plusHours(2));
+        return localDateTime == null ? true : localDateTime.isAfter(LocalDateTime.now().plusHours(2));
     }
 }

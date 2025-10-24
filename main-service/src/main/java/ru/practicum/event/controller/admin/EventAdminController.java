@@ -23,8 +23,8 @@ import java.util.List;
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
 public class EventAdminController {
-    private final EventService eventService;
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final EventService eventService;
 
     /**
      * Получает список событий с фильтрацией для администратора.
