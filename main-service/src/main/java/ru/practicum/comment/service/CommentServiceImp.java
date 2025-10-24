@@ -17,35 +17,52 @@ import ru.practicum.exception.NotFoundResource;
 import ru.practicum.user.service.UserService;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Реализация сервиса для управления комментариями к событиям.
+ * Предоставляет функциональность для создания, получения, обновления и удаления комментариев.
+ */
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class CommentServiceImp implements CommentService{
+public class CommentServiceImp implements CommentService {
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final EventService eventService;
 
+    /**
+     * Получает комментарий по идентификаторам пользователя и комментария.
+     * Проверяет права доступа - только автор может просматривать свой комментарий.
+     *
+     * @param userId    идентификатор пользователя, должен быть положительным
+     * @param commentId идентификатор комментария, должен быть положительным
+     * @return DTO комментария
+     * @throws NotFoundResource  если комментарий с указанным ID не найден
+     * @throws ForbiddenResource если пользователь не является автором комментария
+     */
     @Override
     public CommentDto get(long userId, long commentId) {
-        // проверка
         userService.getUserById(userId);
 
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty())
-            throw new NotFoundResource("Комментарий с id - %d не найден ".formatted(commentId));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundResource(
+                        String.format("Комментарий с id = %d не найден", commentId)));
 
-        Comment comment = optionalComment.get();
-        if (!comment.getAuthor().getId().equals(userId))
-            throw new ForbiddenResource("Просмотр комментария другого автора не возможен");
+        if (comment.getAuthor().getId() != userId) {
+            throw new ForbiddenResource("Просмотр комментария другого автора невозможен");
+        }
 
         return CommentMapper.mapFromComment(comment);
     }
 
+    /**
+     * Получает все комментарии указанного пользователя.
+     *
+     * @param userId идентификатор пользователя, должен быть положительным
+     * @return список DTO комментариев пользователя, может быть пустым
+     */
     @Override
     public List<CommentDto> getAll(long userId) {
-        // проверка
         userService.getUserById(userId);
 
         return commentRepository.findAllByAuthorId(userId).stream()
@@ -53,46 +70,99 @@ public class CommentServiceImp implements CommentService{
                 .toList();
     }
 
+    /**
+     * Создает новый комментарий к событию.
+     * Проверяет возможность комментирования (событие должно быть опубликовано,
+     * пользователь не должен иметь существующего комментария к этому событию).
+     *
+     * @param comment DTO с данными для создания комментария
+     * @return созданный DTO комментария
+     * @throws ConflictResource если событие не опубликовано или комментарий уже существует
+     */
     @Override
     @Transactional
     public CommentDto create(NewCommentDto comment) {
-        // проверяем что еще нет комментария этого пользователя на данное событие
-        if (commentRepository.existsByAuthorIdAndEventId(comment.getAuthor(), comment.getEvent()))
-            throw new ConflictResource("Уже существует комментарий пользователя к данному событию");
+        if (commentRepository.existsByAuthorIdAndEventId(comment.getAuthor(), comment.getEvent())) {
+            throw new ConflictResource("Пользователь уже оставил комментарий к данному событию");
+        }
 
         comment.setEventObj(eventService.getEventById(comment.getEvent()));
-        // комментировать можно только опубликованное событие
-        if (!comment.getEventObj().getState().equals(State.PUBLISHED))
-            throw new ConflictResource("Комментировать можно только опубликованное событие");
-
         comment.setAuthorObj(userService.getUserById(comment.getAuthor()));
-        return CommentMapper.mapFromComment(commentRepository.save(CommentMapper.mapFromNewDto(comment)));
+
+        if (!comment.getEventObj().getState().equals(State.PUBLISHED)) {
+            throw new ConflictResource("Комментировать можно только опубликованное событие");
+        }
+
+        Comment newComment = CommentMapper.mapFromNewDto(comment);
+        Comment savedComment = commentRepository.save(newComment);
+
+        return CommentMapper.mapFromComment(savedComment);
     }
 
+    /**
+     * Обновляет существующий комментарий.
+     * Проверяет права доступа - только автор может редактировать комментарий.
+     *
+     * @param comment DTO с данными для обновления комментария
+     * @return обновленный DTO комментария
+     * @throws NotFoundResource  если комментарий с указанным ID не найден
+     * @throws ForbiddenResource если пользователь не является автором комментария
+     */
     @Override
     @Transactional
     public CommentDto update(UpdateCommentDto comment) {
-        // TODO : реализовать
-        return null;
+        userService.getUserById(comment.getAuthor());
+
+        Comment existingComment = commentRepository.findById(comment.getCommentId())
+                .orElseThrow(() -> new NotFoundResource(
+                        String.format("Комментарий с id = %d не найден", comment.getCommentId())));
+
+        if (existingComment.getAuthor().getId() != comment.getAuthor()) {
+            throw new ForbiddenResource("Редактирование комментария другого автора невозможно");
+        }
+
+        existingComment.setText(comment.getText());
+        Comment updatedComment = commentRepository.save(existingComment);
+
+        return CommentMapper.mapFromComment(updatedComment);
     }
 
+    /**
+     * Удаляет комментарий.
+     * Проверяет права доступа - только автор может удалить комментарий.
+     *
+     * @param userId    идентификатор пользователя, должен быть положительным
+     * @param commentId идентификатор комментария, должен быть положительным
+     * @throws NotFoundResource  если комментарий с указанным ID не найден
+     * @throws ForbiddenResource если пользователь не является автором комментария
+     */
     @Override
     @Transactional
     public void delete(long userId, long commentId) {
-        // проверка
         userService.getUserById(userId);
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty())
-            throw new NotFoundResource("Комментарий с id - %d не найден ".formatted(commentId));
 
-        Comment comment = optionalComment.get();
-        if (!comment.getAuthor().getId().equals(userId))
-            throw new ForbiddenResource("Удаление комментария другого автора не возможен");
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundResource(
+                        String.format("Комментарий с id = %d не найден", commentId)));
+
+        if (comment.getAuthor().getId() != userId) {
+            throw new ForbiddenResource("Удаление комментария другого автора невозможно");
+        }
+
+        commentRepository.delete(comment);
     }
 
+    /**
+     * Получает все комментарии для указанного события.
+     * Используется для публичного доступа к комментариям события.
+     *
+     * @param eventId идентификатор события, должен быть положительным
+     * @return список DTO комментариев события, может быть пустым
+     */
     @Override
     public List<CommentDto> getComments(long eventId) {
-        // TODO : реализовать
-        return List.of();
+        return commentRepository.findAllByEventId(eventId).stream()
+                .map(CommentMapper::mapFromComment)
+                .toList();
     }
 }

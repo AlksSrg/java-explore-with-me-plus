@@ -13,6 +13,10 @@ import ru.practicum.comment.service.CommentService;
 
 import java.util.List;
 
+/**
+ * Приватный контроллер для работы с комментариями.
+ * Предоставляет API для управления комментариями авторизованных пользователей.
+ */
 @Validated
 @RestController
 @RequestMapping("users/{userId}/comments")
@@ -20,17 +24,38 @@ import java.util.List;
 public class CommentPrivateController {
     private final CommentService commentService;
 
+    /**
+     * Получает конкретный комментарий пользователя.
+     *
+     * @param userId    идентификатор пользователя, должен быть положительным числом
+     * @param commentId идентификатор комментария, должен быть положительным числом
+     * @return DTO запрошенного комментария
+     */
     @GetMapping("/{commentId}")
     public CommentDto get(@PathVariable @Positive long userId,
                           @PathVariable @Positive long commentId) {
         return commentService.get(userId, commentId);
     }
 
+    /**
+     * Получает все комментарии пользователя.
+     *
+     * @param userId идентификатор пользователя, должен быть положительным числом
+     * @return список DTO комментариев пользователя, может быть пустым
+     */
     @GetMapping()
     public List<CommentDto> getAll(@PathVariable @Positive long userId) {
         return commentService.getAll(userId);
     }
 
+    /**
+     * Создает новый комментарий к событию.
+     *
+     * @param userId  идентификатор пользователя, должен быть положительным числом
+     * @param eventId идентификатор события, должен быть положительным числом
+     * @param comment DTO с данными для создания комментария
+     * @return созданный DTO комментария
+     */
     @PostMapping("/events/{eventId}")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDto create(@PathVariable @Positive long userId,
@@ -41,6 +66,14 @@ public class CommentPrivateController {
         return commentService.create(comment);
     }
 
+    /**
+     * Обновляет существующий комментарий.
+     *
+     * @param userId    идентификатор пользователя, должен быть положительным числом
+     * @param commentId идентификатор комментария, должен быть положительным числом
+     * @param comment   DTO с данными для обновления комментария
+     * @return обновленный DTO комментария
+     */
     @PatchMapping("/{commentId}")
     public CommentDto update(@PathVariable @Positive long userId,
                              @PathVariable @Positive long commentId,
@@ -50,6 +83,12 @@ public class CommentPrivateController {
         return commentService.update(comment);
     }
 
+    /**
+     * Удаляет комментарий.
+     *
+     * @param userId    идентификатор пользователя, должен быть положительным числом
+     * @param commentId идентификатор комментария, должен быть положительным числом
+     */
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable @Positive long userId,

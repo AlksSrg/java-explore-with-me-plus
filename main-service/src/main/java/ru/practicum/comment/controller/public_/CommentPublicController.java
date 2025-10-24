@@ -12,6 +12,10 @@ import ru.practicum.comment.service.CommentService;
 
 import java.util.List;
 
+/**
+ * Публичный контроллер для работы с комментариями.
+ * Предоставляет API для получения комментариев без аутентификации.
+ */
 @Validated
 @RestController
 @RequestMapping("/events/{eventId}/comments")
@@ -19,6 +23,13 @@ import java.util.List;
 public class CommentPublicController {
     private final CommentService commentService;
 
+    /**
+     * Получает все комментарии для указанного события.
+     * Доступно для всех пользователей без аутентификации.
+     *
+     * @param eventId идентификатор события, должен быть положительным числом
+     * @return список DTO комментариев события, может быть пустым
+     */
     @GetMapping
     public List<CommentDto> getComments(@PathVariable @Positive long eventId) {
         return commentService.getComments(eventId);
