@@ -2,10 +2,10 @@ package ru.practicum.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
@@ -41,7 +41,7 @@ public class NewCommentDto {
      * Не может быть пустым или состоять только из пробелов.
      */
     @NotBlank(message = "Текст комментария не может быть пустым")
-    @Size(min = 3, max = 5000, message = "Текст комментария должен содержать от 3 до 5000 символов")
+    @Length(min = 3, max = 5000, message = "Текст комментария должен содержать от 3 до 5000 символов")
     private String text;
 
     /**
