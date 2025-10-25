@@ -1,8 +1,10 @@
 package ru.practicum.comment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.CommentDto;
@@ -164,9 +166,30 @@ public class CommentServiceImp implements CommentService {
      */
     @Override
     public List<CommentDto> getComments(CommentGetParam param) {
-        Page page = PageRequest.of();
+        Sort sort = null;
+        Pageable pageable = null;
 
-        return commentRepository.findAllByEventId(param.getEventId()).stream()
+        eventService.getEventById(param.getEventId());
+
+        if (param.getSortBy() != null) {
+            sort = switch (param.getSortBy()) {
+                case AUTHOR -> Sort.by("author.name");
+                case CREATED -> Sort.by(Sort.Direction.DESC, "created");
+            };
+        }
+
+        if (sort == null)
+            pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
+        else
+            pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize(), sort);
+
+        Specification<Comment> specification = Specification.where(null);
+        specification = specification.and(CommentRepository.byEventId(param.getEventId()));
+
+        if (param.getAuthorIds() != null)
+            specification = specification.and(CommentRepository.byAuthor(param.getAuthorIds()));
+
+        return commentRepository.findAll(specification, pageable).stream()
                 .map(CommentMapper::mapFromComment)
                 .toList();
     }

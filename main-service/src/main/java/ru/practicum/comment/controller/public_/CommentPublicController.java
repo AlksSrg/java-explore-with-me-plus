@@ -9,6 +9,7 @@ import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.service.CommentService;
 import ru.practicum.comment.utill.CommentGetParam;
 import ru.practicum.comment.utill.SortOrder;
+import ru.practicum.exception.BadRequestException;
 
 import java.util.List;
 
@@ -28,6 +29,10 @@ public class CommentPublicController {
      * Доступно для всех пользователей без аутентификации.
      *
      * @param eventId идентификатор события, должен быть положительным числом
+     * @param authorIds перечень интересующих авторов
+     * @param sortBy порядок сортировки
+     * @param from сколько значений пропустить
+     * @param size кол-во элементов
      * @return список DTO комментариев события, может быть пустым
      */
     @GetMapping
@@ -36,13 +41,19 @@ public class CommentPublicController {
                                         @RequestParam(required = false) String sortBy,
                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                         @RequestParam(defaultValue = "10") @Positive Integer size) {
-        CommentGetParam param = CommentGetParam.builder()
-                .eventId(eventId)
-                .authorIds(authorIds)
-                .sortBy(sortBy == null ? null : SortOrder.valueOf(sortBy))
-                .from(from)
-                .size(size)
-                .build();
+        CommentGetParam param;
+
+        try {
+            param = CommentGetParam.builder()
+                    .eventId(eventId)
+                    .authorIds(authorIds)
+                    .sortBy(sortBy == null ? null : SortOrder.valueOf(sortBy.toUpperCase()))
+                    .from(from)
+                    .size(size)
+                    .build();
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Недопустимое значение параметра сортировки");
+        }
 
         return commentService.getComments(param);
     }

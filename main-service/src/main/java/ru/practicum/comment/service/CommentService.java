@@ -56,9 +56,10 @@ public interface CommentService {
 
     /**
      * Получает все комментарии для указанного события.
+     * Доступно для всех пользователей без аутентификации.
      *
-     * @param param параметры выборки
-     * @return список DTO комментариев события
+     * @param param параметры для выборки
+     * @return список DTO комментариев события, может быть пустым
      */
     List<CommentDto> getComments(CommentGetParam param);
 }
