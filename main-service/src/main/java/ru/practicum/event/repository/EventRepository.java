@@ -3,54 +3,54 @@ package ru.practicum.event.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.utill.State;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Репозиторий для работы с событиями.
+ * <p>
+ * Предоставляет методы для выполнения операций с событиями, включая поиск по инициатору,
+ * <p>
+ * Проверку существования категории и поиск по списку идентификаторов.
+ */
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
+    /**
+     * Находит события по идентификатору инициатора с пагинацией.
+     *
+     * @param initiatorId идентификатор инициатора события
+     * @param pageable    параметры пагинации
+     * @return страница событий
+     */
     Page<Event> findByInitiatorId(Long initiatorId, Pageable pageable);
 
+    /**
+     * Находит событие по идентификатору и идентификатору инициатора.
+     *
+     * @param eventId     идентификатор события
+     * @param initiatorId идентификатор инициатора
+     * @return Optional с событием, если найдено
+     */
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 
+    /**
+     * Находит события по списку идентификаторов.
+     *
+     * @param eventIds список идентификаторов событий
+     * @return список событий
+     */
     List<Event> findByIdIn(List<Long> eventIds);
 
+    /**
+     * Проверяет существование событий для указанной категории.
+     *
+     * @param categoryId идентификатор категории
+     * @return true если существуют события для категории, иначе false
+     */
     boolean existsByCategoryId(Long categoryId);
-
-    @Query("SELECT e FROM Event e WHERE " +
-            "(:users IS NULL OR e.initiator.id IN :users) AND " +
-            "(:states IS NULL OR e.state IN :states) AND " +
-            "(:categories IS NULL OR e.category.id IN :categories) AND " +
-            "(:rangeStart IS NULL OR e.eventDate >= :rangeStart) AND " +
-            "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
-    Page<Event> findEventsByAdmin(@Param("users") List<Long> users,
-                                  @Param("states") List<State> states,
-                                  @Param("categories") List<Long> categories,
-                                  @Param("rangeStart") LocalDateTime rangeStart,
-                                  @Param("rangeEnd") LocalDateTime rangeEnd,
-                                  Pageable pageable);
-
-    @Query("SELECT e FROM Event e WHERE " +
-            "(:text IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR " +
-            "LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) AND " +
-            "(:categories IS NULL OR e.category.id IN :categories) AND " +
-            "(:paid IS NULL OR e.paid = :paid) AND " +
-            "(:rangeStart IS NULL OR e.eventDate >= :rangeStart) AND " +
-            "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd) AND " +
-            "(:onlyAvailable IS NULL OR :onlyAvailable = false OR " +
-            "(e.participantLimit = 0 OR e.participantLimit > (SELECT COUNT(r) FROM Request r WHERE r.event = e AND r.status = 'CONFIRMED')))")
-    Page<Event> findEventsByPublic(@Param("text") String text,
-                                   @Param("categories") List<Long> categories,
-                                   @Param("paid") Boolean paid,
-                                   @Param("rangeStart") LocalDateTime rangeStart,
-                                   @Param("rangeEnd") LocalDateTime rangeEnd,
-                                   @Param("onlyAvailable") Boolean onlyAvailable,
-                                   Pageable pageable);
 }

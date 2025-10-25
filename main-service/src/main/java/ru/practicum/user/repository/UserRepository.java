@@ -7,20 +7,26 @@ import ru.practicum.user.model.User;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Репозиторий для работы с сущностью User.
+ * <p>
+ * Предоставляет методы для выполнения операций с пользователями в базе данных.
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
     /**
-     * Ищет пользователя по email.
+     * Находит пользователя по email (регистронезависимо).
      *
-     * @param email email
-     * @return пользователь
+     * @param email email пользователя
+     * @return Optional с пользователем, если найден
      */
     Optional<User> findByEmailContainingIgnoreCase(String email);
 
     /**
-     * Ищет пользователей по id.
+     * Находит пользователей по списку идентификаторов.
      *
-     * @param ids перечень id пользователей
+     * @param ids список идентификаторов пользователей
      * @return список пользователей
      */
     List<User> findAllByIdIn(List<Long> ids);

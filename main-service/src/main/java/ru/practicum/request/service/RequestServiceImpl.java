@@ -18,8 +18,10 @@ import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Реализация сервиса для работы с заявками на участие в событиях.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,7 +36,7 @@ public class RequestServiceImpl implements RequestService {
         checkUserExists(userId);
         return requestRepository.findByRequesterId(userId).stream()
                 .map(RequestMapper::mapToParticipationRequestDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -43,28 +45,23 @@ public class RequestServiceImpl implements RequestService {
         User user = getUserById(userId);
         Event event = getEventById(eventId);
 
-        // Проверка, что пользователь не является инициатором события
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictResource("Инициатор события не может подать заявку на участие в своём событии");
         }
 
-        // Проверка, что событие опубликовано
         if (event.getState() != State.PUBLISHED) {
             throw new ConflictResource("Нельзя участвовать в неопубликованном событии");
         }
 
-        // Проверка, что заявка уже существует
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new ConflictResource("Заявка на участие в этом событии уже существует");
         }
 
-        // Проверка лимита участников
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         if (event.getParticipantLimit() > 0 && confirmedRequests >= event.getParticipantLimit()) {
             throw new ConflictResource("Достигнут лимит участников для этого события");
         }
 
-        // Определение статуса заявки
         Status status = Status.PENDING;
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             status = Status.CONFIRMED;
@@ -93,7 +90,6 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.mapToParticipationRequestDto(updatedRequest);
     }
 
-    // Вспомогательные методы
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundResource("Пользователь с id=" + userId + " не найден"));

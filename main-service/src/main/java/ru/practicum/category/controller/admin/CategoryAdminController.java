@@ -10,6 +10,9 @@ import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.service.CategoryService;
 
+/**
+ * Контроллер для административных операций с категориями.
+ */
 @Validated
 @RestController
 @RequestMapping("/admin/categories")
@@ -18,9 +21,9 @@ public class CategoryAdminController {
     private final CategoryService categoryService;
 
     /**
-     * Создание категории.
+     * Создает новую категорию.
      *
-     * @param categoryDto данные категории
+     * @param categoryDto данные для создания категории
      * @return созданная категория
      */
     @PostMapping
@@ -30,10 +33,11 @@ public class CategoryAdminController {
     }
 
     /**
-     * Изменение категории.
+     * Обновляет существующую категорию.
      *
-     * @param categoryDto данные категории
-     * @return измененная категория
+     * @param categoryDto данные для обновления категории
+     * @param catId       идентификатор категории
+     * @return обновленная категория
      */
     @PatchMapping("/{catId}")
     public CategoryDto update(@RequestBody @Valid CategoryDto categoryDto,
@@ -43,9 +47,9 @@ public class CategoryAdminController {
     }
 
     /**
-     * Удаление категории.
+     * Удаляет категорию по идентификатору.
      *
-     * @param catId id категории
+     * @param catId идентификатор категории для удаления
      */
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

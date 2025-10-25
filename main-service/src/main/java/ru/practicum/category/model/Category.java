@@ -3,8 +3,9 @@ package ru.practicum.category.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
+/**
+ * Сущность категории.
+ */
 @Builder
 @Table(name = "categories")
 @Entity
@@ -16,6 +17,8 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(nullable = false, length = 50)
     private String name;
 
     @Override
@@ -27,6 +30,6 @@ public class Category {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Long.hashCode(id);
     }
 }

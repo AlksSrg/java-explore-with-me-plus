@@ -14,6 +14,11 @@ import ru.practicum.user.utill.UserGetParam;
 
 import java.util.List;
 
+/**
+ * Контроллер для управления пользователями (административный функционал).
+ * <p>
+ * Предоставляет API для создания, получения и удаления пользователей.
+ */
 @Validated
 @RequiredArgsConstructor
 @RestController
@@ -22,9 +27,9 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * Получает перечень пользователей.
+     * Получает перечень пользователей с возможностью фильтрации по идентификаторам и пагинацией.
      *
-     * @param ids  перечень id пользователей
+     * @param ids  список идентификаторов пользователей для фильтрации (опционально)
      * @param from количество элементов, которые нужно пропустить для формирования текущего набора
      * @param size количество элементов в наборе
      * @return список пользователей
@@ -44,7 +49,7 @@ public class UserController {
     }
 
     /**
-     * Создание нового пользователя.
+     * Создает нового пользователя.
      *
      * @param newUserRequest данные нового пользователя
      * @return созданный пользователь
@@ -56,9 +61,9 @@ public class UserController {
     }
 
     /**
-     * Удаление пользователя.
+     * Удаляет пользователя по идентификатору.
      *
-     * @param userId id пользователя
+     * @param userId идентификатор пользователя
      */
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

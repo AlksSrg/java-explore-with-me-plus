@@ -5,6 +5,9 @@ import lombok.*;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.user.dto.UserShortDto;
 
+/**
+ * DTO для краткого представления события.
+ */
 @Getter
 @Setter
 @Builder

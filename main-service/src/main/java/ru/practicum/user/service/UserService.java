@@ -7,35 +7,41 @@ import ru.practicum.user.utill.UserGetParam;
 
 import java.util.List;
 
+/**
+ * Сервис для работы с пользователями.
+ * <p>
+ * Определяет контракт для операций управления пользователями.
+ */
 public interface UserService {
+
     /**
-     * Получает перечень пользователей.
+     * Получает перечень пользователей с учетом параметров фильтрации и пагинации.
      *
-     * @param userGetParam параметры запроса
-     * @return список пользователей
+     * @param userGetParam параметры запроса (фильтрация и пагинация)
+     * @return список DTO пользователей
      */
     List<UserDto> getUsers(UserGetParam userGetParam);
 
     /**
-     * Получение пользователя по ID.
+     * Получает пользователя по идентификатору.
      *
-     * @param userId id пользователя
-     * @return пользователь
+     * @param userId идентификатор пользователя
+     * @return сущность пользователя
      */
     User getUserById(Long userId);
 
     /**
-     * Создание нового пользователя.
+     * Создает нового пользователя.
      *
-     * @param newUserRequest данные нового пользователя
-     * @return созданный пользователь
+     * @param newUserRequest данные для создания пользователя
+     * @return DTO созданного пользователя
      */
     UserDto createUser(NewUserRequest newUserRequest);
 
     /**
-     * Удаление пользователя.
+     * Удаляет пользователя по идентификатору.
      *
-     * @param userId id пользователя
+     * @param userId идентификатор пользователя
      */
     void deleteUser(Long userId);
 }

@@ -4,14 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.category.model.Category;
 
+/**
+ * DTO для представления категории.
+ */
 @Getter
 @Setter
 @Builder
@@ -21,13 +19,18 @@ import ru.practicum.category.model.Category;
 public class CategoryDto {
     @Positive
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Long id; // read only
+    private Long id;
 
-    @Size(min = 1, message = "Название категории не должно быть меньше 1 символа")
-    @Size(max = 50, message = "Название категории не должно быть больше 50 символов")
+    @Size(min = 1, max = 50)
     @NotBlank
     private String name;
 
+    /**
+     * Создает DTO из сущности категории.
+     *
+     * @param category сущность категории
+     * @return DTO категории
+     */
     public static CategoryDto mapFromCategory(Category category) {
         return CategoryDto.builder()
                 .id(category.getId())
@@ -35,6 +38,11 @@ public class CategoryDto {
                 .build();
     }
 
+    /**
+     * Преобразует DTO в сущность категории.
+     *
+     * @return сущность категории
+     */
     public Category mapToCategory() {
         return Category.builder()
                 .id(this.id)

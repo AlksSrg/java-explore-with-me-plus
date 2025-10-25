@@ -18,6 +18,11 @@ import ru.practicum.user.utill.UserGetParam;
 
 import java.util.List;
 
+/**
+ * Реализация сервиса для работы с пользователями.
+ * <p>
+ * Обеспечивает бизнес-логику управления пользователями.
+ */
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
@@ -25,10 +30,10 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
 
     /**
-     * Получает перечень пользователей.
+     * Получает перечень пользователей с учетом параметров фильтрации и пагинации.
      *
-     * @param userGetParam параметры запроса
-     * @return список пользователей
+     * @param userGetParam параметры запроса (фильтрация и пагинация)
+     * @return список DTO пользователей
      */
     @Override
     public List<UserDto> getUsers(UserGetParam userGetParam) {
@@ -47,10 +52,11 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Получение пользователя по ID.
+     * Получает пользователя по идентификатору.
      *
-     * @param userId id пользователя
-     * @return пользователь
+     * @param userId идентификатор пользователя
+     * @return сущность пользователя
+     * @throws NotFoundResource если пользователь не найден
      */
     @Override
     public User getUserById(Long userId) {
@@ -59,15 +65,15 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Создание нового пользователя.
+     * Создает нового пользователя.
      *
-     * @param newUserRequest данные нового пользователя
-     * @return созданный пользователь
+     * @param newUserRequest данные для создания пользователя
+     * @return DTO созданного пользователя
+     * @throws ConflictResource если пользователь с таким email уже существует
      */
     @Override
     @Transactional
     public UserDto createUser(NewUserRequest newUserRequest) {
-        // Проверка уникальности email
         userRepository.findByEmailContainingIgnoreCase(newUserRequest.getEmail())
                 .ifPresent(user -> {
                     throw new ConflictResource("Пользователь с email '" + newUserRequest.getEmail() + "' уже существует");
@@ -80,15 +86,15 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Удаление пользователя.
+     * Удаляет пользователя по идентификатору.
      *
-     * @param userId id пользователя
+     * @param userId идентификатор пользователя
+     * @throws NotFoundResource если пользователь не найден
      */
     @Override
     @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(Long userId) {
-        // Проверка существования пользователя
         if (!userRepository.existsById(userId)) {
             throw new NotFoundResource("Пользователь с id=" + userId + " не найден");
         }

@@ -56,6 +56,10 @@ public class EndpointHitRepositoryImpl implements EndpointHitRepository {
      */
     @Override
     public List<ViewStatsDto> getViewStats(ViewStatsRequestDto viewStatsRequestDto) {
+        if (viewStatsRequestDto.getEnd().isBefore(viewStatsRequestDto.getStart()))
+            throw new UnableAddElementException("Не корректные временные интервалы",
+                    viewStatsRequestDto.getEnd());
+
         MapSqlParameterSource sqlParams = new MapSqlParameterSource();
         sqlParams.addValue("start", viewStatsRequestDto.getStart());
         sqlParams.addValue("end", viewStatsRequestDto.getEnd());
@@ -80,6 +84,8 @@ public class EndpointHitRepositoryImpl implements EndpointHitRepository {
         getViewStatsSql.append("ORDER BY hits DESC ");
 
         String finalSql = getViewStatsSql.toString();
+
+        List<ViewStatsDto> viewStatsDtos = namedParameterJdbcTemplate.query(finalSql, sqlParams, new ViewStatsDtoRowMapper());
 
         return namedParameterJdbcTemplate.query(finalSql, sqlParams, new ViewStatsDtoRowMapper());
     }

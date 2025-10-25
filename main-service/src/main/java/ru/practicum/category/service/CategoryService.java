@@ -6,52 +6,56 @@ import ru.practicum.category.model.Category;
 
 import java.util.List;
 
+/**
+ * Сервис для работы с категориями.
+ */
 public interface CategoryService {
+
     /**
-     * Получение категорий.
+     * Возвращает список категорий с пагинацией.
      *
-     * @param from количество категорий, которые нужно пропустить для формирования текущего набора
-     * @param size количество категорий в наборе
+     * @param from начальная позиция
+     * @param size количество элементов
      * @return список категорий
      */
     List<CategoryDto> getAll(int from, int size);
 
     /**
-     * Получение информации о категории.
+     * Возвращает категорию по идентификатору.
      *
-     * @param catId id категории
+     * @param catId идентификатор категории
      * @return данные категории
      */
     CategoryDto get(long catId);
 
     /**
-     * Получение сущности категории по ID.
+     * Возвращает сущность категории по идентификатору.
      *
-     * @param catId id категории
+     * @param catId идентификатор категории
      * @return сущность категории
      */
     Category getCategoryById(long catId);
 
     /**
-     * Создание категории.
+     * Создает новую категорию.
      *
-     * @param categoryDto данные категории
+     * @param categoryDto данные для создания
      * @return созданная категория
      */
     CategoryDto create(NewCategoryDto categoryDto);
 
     /**
-     * Изменение категории.
+     * Обновляет существующую категорию.
      *
-     * @param categoryDto данные категории
-     * @return измененная категория
+     * @param categoryDto данные для обновления
+     * @return обновленная категория
      */
     CategoryDto update(CategoryDto categoryDto);
 
     /**
-     * Удаление категории.
+     * Удаляет категорию по идентификатору.
      *
-     * @param catId id категории
+     * @param catId идентификатор категории
      */
     void delete(long catId);
 }

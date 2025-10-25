@@ -1,12 +1,12 @@
 package ru.practicum.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
+/**
+ * DTO для краткого представления данных пользователя.
+ * <p>
+ * Используется в случаях, когда необходима только базовая информация о пользователе.
+ */
 @Getter
 @Setter
 @Builder
@@ -14,6 +14,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserShortDto {
-	private Long id;
-	private String name;
+
+    /**
+     * Уникальный идентификатор пользователя.
+     */
+    private Long id;
+
+    /**
+     * Имя пользователя.
+     */
+    private String name;
 }

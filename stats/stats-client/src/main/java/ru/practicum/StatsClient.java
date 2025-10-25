@@ -14,9 +14,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -99,20 +97,27 @@ public class StatsClient {
             return List.of();
         }
 
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("start", start.format(DATE_TIME_FORMATTER));
-        uriVariables.put("end", end.format(DATE_TIME_FORMATTER));
-        uriVariables.put("unique", Boolean.toString(unique));
-        if (uris != null)
-            uriVariables.put("uris", uris.toString());
+        log.info("Запрашиваем статистику : start - %s, end - %s, uris - %s, unique - %b"
+                .formatted(start.format(DATE_TIME_FORMATTER), end.format(DATE_TIME_FORMATTER), uris, unique));
 
         try {
-            return restClient.get()
-                    .uri("/stats", uriVariables)
+            List<ViewStatsDto> views = restClient.get()
+                    //.uri("/stats", uriVariables)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/stats")  //
+                            .queryParam("start", start.format(DATE_TIME_FORMATTER))
+                            .queryParam("end", end.format(DATE_TIME_FORMATTER))
+                            .queryParam("unique", unique)
+                            .queryParam("uris", uris != null ? String.join(",", uris) : "")
+                            .build()
+                    )
                     .header("Content-Type", "application/json")
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {
+                    .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
                     });
+
+            log.info("Результат - %s".formatted(views.toString()));
+            return views;
         } catch (ResourceAccessException ex) {
             log.error("Сервер не доступен");
             return List.of();

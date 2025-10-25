@@ -10,6 +10,9 @@ import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.compilation.service.CompilationService;
 
+/**
+ * Контроллер для административных операций с подборками событий.
+ */
 @RestController
 @RequestMapping("/admin/compilations")
 @RequiredArgsConstructor
@@ -18,6 +21,12 @@ public class CompilationAdminController {
 
     private final CompilationService compilationService;
 
+    /**
+     * Создает новую подборку событий.
+     *
+     * @param newCompilationDto данные для создания подборки
+     * @return созданная подборка
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
@@ -25,6 +34,11 @@ public class CompilationAdminController {
         return compilationService.createCompilation(newCompilationDto);
     }
 
+    /**
+     * Удаляет подборку событий по идентификатору.
+     *
+     * @param compId идентификатор подборки
+     */
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
@@ -32,6 +46,13 @@ public class CompilationAdminController {
         compilationService.deleteCompilation(compId);
     }
 
+    /**
+     * Обновляет существующую подборку событий.
+     *
+     * @param compId        идентификатор подборки
+     * @param updateRequest данные для обновления
+     * @return обновленная подборка
+     */
     @PatchMapping("/{compId}")
     public CompilationDto updateCompilation(@PathVariable Long compId,
                                             @Valid @RequestBody UpdateCompilationRequest updateRequest) {

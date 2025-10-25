@@ -9,20 +9,21 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+
     /**
-     * Поиск категории по имени.
+     * Находит категорию по имени (без учета регистра).
      *
-     * @param name наименование категории
-     * @return найденная категория
+     * @param name имя категории для поиска
+     * @return категория, если найдена
      */
     Optional<Category> findByNameContainingIgnoreCase(String name);
 
     /**
-     * Поиск категории по имени исключая переданные id.
+     * Находит категорию по имени, исключая указанные идентификаторы.
      *
-     * @param name наименование категории
-     * @param id перечень id для исключения
-     * @return найденная категория
+     * @param name имя категории для поиска
+     * @param id   идентификаторы для исключения
+     * @return категория, если найдена
      */
     Optional<Category> findByNameContainingIgnoreCaseAndIdNotIn(String name, Collection<Long> id);
 }
