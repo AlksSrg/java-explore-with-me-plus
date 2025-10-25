@@ -3,6 +3,7 @@ package ru.practicum.comment.service;
 import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.dto.NewCommentDto;
 import ru.practicum.comment.dto.UpdateCommentDto;
+import ru.practicum.comment.utill.CommentGetParam;
 
 import java.util.List;
 
@@ -56,8 +57,8 @@ public interface CommentService {
     /**
      * Получает все комментарии для указанного события.
      *
-     * @param eventId идентификатор события
+     * @param param параметры выборки
      * @return список DTO комментариев события
      */
-    List<CommentDto> getComments(long eventId);
+    List<CommentDto> getComments(CommentGetParam param);
 }

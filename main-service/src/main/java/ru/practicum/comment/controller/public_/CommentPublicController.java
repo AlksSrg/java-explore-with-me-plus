@@ -1,14 +1,14 @@
 package ru.practicum.comment.controller.public_;
 
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.service.CommentService;
+import ru.practicum.comment.utill.CommentGetParam;
+import ru.practicum.comment.utill.SortOrder;
 
 import java.util.List;
 
@@ -31,7 +31,19 @@ public class CommentPublicController {
      * @return список DTO комментариев события, может быть пустым
      */
     @GetMapping
-    public List<CommentDto> getComments(@PathVariable @Positive long eventId) {
-        return commentService.getComments(eventId);
+    public List<CommentDto> getComments(@PathVariable @Positive long eventId,
+                                        @RequestParam(required = false) List<Long> authorIds,
+                                        @RequestParam(required = false) String sortBy,
+                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
+        CommentGetParam param = CommentGetParam.builder()
+                .eventId(eventId)
+                .authorIds(authorIds)
+                .sortBy(sortBy == null ? null : SortOrder.valueOf(sortBy))
+                .from(from)
+                .size(size)
+                .build();
+
+        return commentService.getComments(param);
     }
 }

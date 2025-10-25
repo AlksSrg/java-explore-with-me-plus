@@ -1,6 +1,8 @@
 package ru.practicum.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.CommentDto;
@@ -9,6 +11,7 @@ import ru.practicum.comment.dto.UpdateCommentDto;
 import ru.practicum.comment.mapper.CommentMapper;
 import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.repository.CommentRepository;
+import ru.practicum.comment.utill.CommentGetParam;
 import ru.practicum.event.service.EventService;
 import ru.practicum.event.utill.State;
 import ru.practicum.exception.ConflictResource;
@@ -156,12 +159,14 @@ public class CommentServiceImp implements CommentService {
      * Получает все комментарии для указанного события.
      * Используется для публичного доступа к комментариям события.
      *
-     * @param eventId идентификатор события, должен быть положительным
+     * @param param параметры выборки
      * @return список DTO комментариев события, может быть пустым
      */
     @Override
-    public List<CommentDto> getComments(long eventId) {
-        return commentRepository.findAllByEventId(eventId).stream()
+    public List<CommentDto> getComments(CommentGetParam param) {
+        Page page = PageRequest.of();
+
+        return commentRepository.findAllByEventId(param.getEventId()).stream()
                 .map(CommentMapper::mapFromComment)
                 .toList();
     }
