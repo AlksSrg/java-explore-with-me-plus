@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "d59fd8fd-b660-48c0-b50c-22e7d1db5761",
+		"_postman_id": "64829537-a37b-45cd-8e34-b96313a28a89",
 		"name": "\"Explore with me\" API комментарии",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26692420"
+		"_exporter_id": "45548734",
+		"_collection_link": "https://aleksaandr.postman.co/workspace/Aleksaandr's-Workspace~72457073-eac3-4bac-8680-c1970e444875/collection/45548734-64829537-a37b-45cd-8e34-b96313a28a89?action=share&source=collection_link&creator=45548734"
 	},
 	"item": [
 		{
@@ -86,6 +87,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"text\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/users/:userId/comments/events/:eventId",
 							"host": [
@@ -188,6 +198,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"text\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/users/:userId/comments/events/:eventId",
 							"host": [
@@ -295,6 +314,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"text\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/users/:userId/comments/events/:eventId",
 							"host": [
@@ -402,6 +430,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"text\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/users/:userId/comments/events/:eventId",
 							"host": [
@@ -443,39 +480,36 @@
 									"    try {",
 									"        comment = rnd.getComment();",
 									"       ",
+									"        const user = await api.addUser(rnd.getUser());",
+									"        ",
 									"        const category = await api.addCategory(rnd.getCategory());",
 									"        let eventBody = rnd.getEvent(category.id);",
-									"        eventBody['requestModeration'] = true",
+									"        eventBody['requestModeration'] = true;",
+									"        ",
 									"        let event = await api.addEvent(user.id, eventBody);",
 									"        event = await api.publishEvent(event.id);",
-									"        pm.collectionVariables.set(\"eid\", event.id)",
+									"        ",
+									"        pm.collectionVariables.set(\"eid\", event.id);",
+									"        pm.collectionVariables.set(\"uid\", user.id);",
 									"        ",
 									"    } catch(err) {",
 									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);",
 									"    }",
 									"",
-									"    pm.request.body.update({",
+									"    pm.request.body = {",
 									"        mode: 'raw',",
 									"        raw: JSON.stringify(comment),",
 									"        options: { raw: { language: 'json' } }",
-									"    });    ",
+									"    };    ",
 									"};",
 									"",
-									"",
-									"const interval = setInterval(() => {}, 1000);",
-									"",
-									"setTimeout(async () => ",
-									"    {",
-									"        try {",
-									"            await main();",
-									"        } catch (e) {",
-									"            console.error(e);",
-									"        } finally {",
-									"            clearInterval(interval);",
-									"        }",
-									"    },  ",
-									"    100 ",
-									");"
+									"setTimeout(async () => {",
+									"    try {",
+									"        await main();",
+									"    } catch (e) {",
+									"        console.error(e);",
+									"    }",
+									"}, 100);"
 								],
 								"type": "text/javascript",
 								"packages": {},
