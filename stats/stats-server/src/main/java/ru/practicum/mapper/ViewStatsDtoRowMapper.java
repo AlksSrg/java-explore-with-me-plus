@@ -7,6 +7,9 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Маппер для преобразования ResultSet в объект ViewStatsDto.
+ */
 @Slf4j
 public class ViewStatsDtoRowMapper implements RowMapper<ViewStatsDto> {
 

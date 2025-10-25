@@ -2,6 +2,9 @@ package ru.practicum.exception;
 
 import lombok.Getter;
 
+/**
+ * Исключение, возникающее при невозможности добавления элемента в систему.
+ */
 @Getter
 public class UnableAddElementException extends RuntimeException {
 

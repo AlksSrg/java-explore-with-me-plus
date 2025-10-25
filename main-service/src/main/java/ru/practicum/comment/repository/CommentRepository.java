@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.comment.model.Comment;
 
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -47,7 +46,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
                 cb.equal(root.get("event").get("id"), eventId);
     }
 
-     static Specification<Comment> byAuthor(List<Long> authorIds) {
+    static Specification<Comment> byAuthor(List<Long> authorIds) {
         return (root, cq, cb) ->
                 root.get("author").get("id").in(authorIds);
     }

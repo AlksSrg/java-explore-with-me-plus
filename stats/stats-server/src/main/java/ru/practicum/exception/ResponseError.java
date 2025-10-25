@@ -4,6 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO класс для представления информации об ошибке в HTTP ответах.
+ */
 @Getter
 @Setter
 @Builder
