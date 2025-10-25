@@ -12,6 +12,9 @@ import ru.practicum.mapper.ViewStatsDtoRowMapper;
 
 import java.util.List;
 
+/**
+ * Реализация репозитория для работы с данными о запросах к эндпоинтам.
+ */
 @Slf4j
 @Repository
 public class EndpointHitRepositoryImpl implements EndpointHitRepository {

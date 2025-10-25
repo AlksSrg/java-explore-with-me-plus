@@ -11,7 +11,7 @@ import ru.practicum.exception.ConflictResource;
 public class ErrorCustomFuture extends ConstraintDeclarationException {
     /**
      * -- GETTER --
-     *  Возвращает конфликт ресурса.
+     * Возвращает конфликт ресурса.
      *
      */
     private final ConflictResource conflictResource;

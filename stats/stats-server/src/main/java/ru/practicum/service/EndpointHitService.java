@@ -6,6 +6,9 @@ import dto.ViewStatsRequestDto;
 
 import java.util.List;
 
+/**
+ * Сервис для работы со статистикой запросов к эндпоинтам.
+ */
 public interface EndpointHitService {
 
     /**

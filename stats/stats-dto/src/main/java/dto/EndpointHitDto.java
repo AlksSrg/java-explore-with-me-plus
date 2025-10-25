@@ -12,6 +12,9 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO для представления информации о hit'е.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

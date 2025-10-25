@@ -7,6 +7,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO для запроса статистики просмотров.
+ */
 @Getter
 @Setter
 @Builder

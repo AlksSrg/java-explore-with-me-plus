@@ -169,6 +169,24 @@ public class ErrorHandler {
     }
 
     /**
+     * Обрабатывает исключения отсутствия полномочий.
+     *
+     * @param ex исключение ForbiddenResource
+     * @return объект ошибки API
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleForbiddenResource(ForbiddenResource ex) {
+        log.error("Missing parameter: {}", ex.getMessage());
+        return ApiError.builder()
+                .message(ex.getMessage())
+                .reason("Доступ запрещен")
+                .status(HttpStatus.FORBIDDEN.toString())
+                .timestamp(LocalDateTime.now().format(FORMAT_DATE_TIME))
+                .build();
+    }
+
+    /**
      * Обрабатывает все неперехваченные исключения.
      *
      * @param ex исключение

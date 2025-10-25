@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Глобальный обработчик исключений для контроллеров статистики эндпоинтов.
+ */
 @ControllerAdvice
 public class EndpointHitHandler {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";

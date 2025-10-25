@@ -3,6 +3,9 @@ package dto;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * DTO для представления статистики просмотров.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Контроллер для работы со статистикой запросов к эндпоинтам.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
